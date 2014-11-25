@@ -1,35 +1,28 @@
 {
-  "name": "waterline-waterline-http",
+  "name": "waterline-http",
   "version": "0.10.0",
-  "description": "waterline-http adapter for Sails / Waterline",
-  "main": "adapter.js",
+  "description": "AnyPresence waterline-http adapter for Sails / Waterline",
+  "main": "lib/adapter.js",
   "scripts": {
-    "test": "node test/integration/runner -R spec -b"
+    "test": "mocha test --recursive"
   },
-  "repository": {"type":"git","url":"git://github.com/balderdashy/waterline-%s.git"},
-  "keywords": [
-    "waterline-http",
-    "adapter",
-    "sails",
-    "waterline",
-    "sails.js",
-    "plugin"
-  ],
-  "author": "balderdashy",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AnyPresence/waterline-http-adapter"
+  },
+  "author": "AnyPresence",
   "license": "MIT",
   "readmeFilename": "README.md",
-  "dependencies": {},
   "devDependencies": {
-    "waterline-adapter-tests": "~0.10.0",
+    "captains-log": "~0.11.0",
+    "chai": "1.10.0",
+    "lodash": "2.4.1",
     "mocha": "*",
-    "captains-log": "~0.11.0"
+    "waterline": "^0.10.14"
   },
   "waterlineAdapter": {
     "type": "waterline-http",
-    "interfaces": [
-      "semantic",
-      "queryable"
-    ],
+    "interfaces": [],
     "waterlineVersion": "~0.10.0"
   }
 }
