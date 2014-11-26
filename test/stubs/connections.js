@@ -1,12 +1,15 @@
 module.exports = {
     test: {
         adapter: 'waterline-http',
-        base_url: 'http://localhost:4567',
-        logging_level: 'error',
+        baseUri: 'http://localhost:1337',
+        loggingLevel: 'error',
         username: 'user',
-        password_plain_text: 'password',
+        passwordPlainText: 'password',
         format: 'json',
-        headers: [],
-        url_parameters: []
+        headers: {},
+        urlParameters: {},
+        modelMap: {
+            'v1model': 'V1Model'
+        }
     }
 };

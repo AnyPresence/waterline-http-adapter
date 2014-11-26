@@ -1,7 +1,4 @@
-/**
- * Test dependencies
- */
-var Adapter = require('../../'),
+var adapter = require('../../'),
     assert = require('chai').assert,
     connections = require('../stubs/connections');
 
@@ -10,66 +7,97 @@ var waterline, Model;
 before(function(done) {
     var fn = require('../bootstrap-waterline');
     var collections = {
-        "basic-model": require('../stubs/basic-model')
+        "V1Model": require('../stubs/V1Model')
     };
     waterline = fn(connections, collections, function(err, ontology) {
-        Model = ontology.collections['basic-model'];
+        Model = ontology.collections['v1model'];
         done(err);
     });
 });
 
-describe('Waterline configuration', function() {
-    it('should get the connection stub', function() {
-        assert.isObject(connections);
-    });
-
-    it('should get the basic-model stub', function() {
-        assert.isObject(Model);
-    });
-
-    it('should bootstrap waterline for testing', function() {
-        assert.isObject(waterline);
-    });
-});
-
 describe('Adapter', function() {
-    it('should export correctly for testing', function() {
-        assert.isObject(Adapter);
+    describe('Connection configuration', function() {
+        it('should have the test object', function() {
+            assert.isDefined(connections.test);
+        });
+
+        describe('Test connection', function() {
+            var testConnection = connections.test;
+
+            it('should have the adapter property', function() {
+                assert.isDefined(testConnection.adapter);
+            });
+
+            it('should have the baseUri property', function() {
+                assert.isDefined(testConnection.baseUri);
+            });
+
+            it('should have a loggingLevel property', function() {
+                assert.isDefined(testConnection.loggingLevel);
+            });
+
+            it('should have a username property', function() {
+                assert.isDefined(testConnection.username);
+            });
+
+            it('should have a passwordPlainText property', function() {
+                assert.isDefined(testConnection.passwordPlainText);
+            });
+
+            it('should have a format property', function() {
+                assert.isDefined(testConnection.format);
+            });
+
+            it('should have a headers property', function() {
+                assert.isDefined(testConnection.headers);
+            });
+
+            it('should have a urlParameters property', function() {
+                assert.isDefined(testConnection.urlParameters);
+            });
+
+            it('should have a modelMap property', function() {
+                assert.isDefined(testConnection.modelMap);
+            });
+        });
     });
 
-    describe('interface', function() {
-        it('should implement the registerConnection function', function() {
-            assert.isFunction(Adapter.registerConnection);
+    describe('Waterline configuration', function() {
+        it('should get the connection stub', function() {
+            assert.isObject(connections);
         });
 
-        it('should implement the teardown function', function() {
-            assert.isFunction(Adapter.teardown);
+        it('should get the V1Model stub', function() {
+            assert.isObject(Model);
         });
 
-        it('should implement a find function', function() {
-            assert.isFunction(Adapter.find);
+        it('should bootstrap waterline for testing', function() {
+            assert.isObject(waterline);
+        });
+    });
+
+    describe('adapter', function() {
+        it('should export correctly for testing', function() {
+            assert.isObject(adapter);
         });
 
-        it('should implement a create function', function() {
-            assert.isFunction(Adapter.create);
-        });
+        describe('Interface', function() {
+            it('should implement the registerConnection function', function() {
+                assert.isFunction(adapter.registerConnection);
+            });
 
-        it('should implement an update function', function() {
-            assert.isFunction(Adapter.update);
-        });
+            it('should implement the teardown function', function() {
+                assert.isFunction(adapter.teardown);
+            });
 
-        it('should implement a destroy function', function() {
-            assert.isFunction(Adapter.destroy);
-        });
+            it('should implement a request function', function() {
+                assert.isFunction(adapter.request);
+            });
 
-        it('should implement an identity property', function() {
-            assert(Adapter.identity === 'waterline-http');
+            it('should implement an identity property', function() {
+                assert(adapter.identity && adapter.identity === 'waterline-http');
+            });
         });
     });
 });
 
-describe('basic-model', function() {
-    it('should implement the find method defined in the adapter', function(done) {
-        Model.find(done);
-    });
-})
