@@ -21,15 +21,25 @@ describe('Http-helper', function() {
 
         it('should return a mapped object', function() {
             var testObject = {
+                id: '16SDNIFOD12DISJ012AN812A',
                 outer: {
                     inner: {
                         value: 'test'
-                    }
+                    },
+                    number: 1234
                 }
             };
 
-            assert.equal(helper.mapFields(testObject, action), 'test');
+            model.httpAdapter.read.mapping = {
+                desc: '$.outer.inner.value',
+                value: '$.outer.number'
+            };
 
+            var o = helper.mapFields(testObject, model, action);
+            
+            assert.equal(o.desc, 'test');
+            assert.equal(o.value, 1234);
+            assert.equal(o.id, '16SDNIFOD12DISJ012AN812A');
         });
     });
 

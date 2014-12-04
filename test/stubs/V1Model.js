@@ -8,6 +8,9 @@ module.exports = {
         },
         desc: {
             type: 'text'
+        },
+        value: {
+            type: 'integer'
         }
     },
     httpAdapter: {
@@ -17,9 +20,7 @@ module.exports = {
             format: 'json',
             headers: {},
             urlParameters: {},
-            mapping: {
-                'value': '$.outer.inner.value'
-            },
+            mapping: {},
             bodyPayloadTemplate: ''
         },
         create: {
