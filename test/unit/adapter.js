@@ -32,31 +32,31 @@ describe('Adapter', function() {
                 assert.isDefined(testConnection.baseUri);
             });
 
-            it('should have a loggingLevel property', function() {
+            it('should have the loggingLevel property', function() {
                 assert.isDefined(testConnection.loggingLevel);
             });
 
-            it('should have a username property', function() {
+            it('should have the username property', function() {
                 assert.isDefined(testConnection.username);
             });
 
-            it('should have a passwordPlainText property', function() {
+            it('should have the passwordPlainText property', function() {
                 assert.isDefined(testConnection.passwordPlainText);
             });
 
-            it('should have a format property', function() {
+            it('should have the format property', function() {
                 assert.isDefined(testConnection.format);
             });
 
-            it('should have a headers property', function() {
+            it('should have the headers property', function() {
                 assert.isDefined(testConnection.headers);
             });
 
-            it('should have a urlParameters property', function() {
+            it('should have the urlParameters property', function() {
                 assert.isDefined(testConnection.urlParameters);
             });
 
-            it('should have a modelMap property', function() {
+            it('should have the modelMap property', function() {
                 assert.isDefined(testConnection.modelMap);
             });
         });

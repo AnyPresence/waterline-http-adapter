@@ -1,5 +1,7 @@
 module.exports = {
     connection: 'test',
+    autoCreatedAt: false,
+    autoUpdatedAt: false,
     attributes: {
         id: {
             type: 'integer'
@@ -14,8 +16,11 @@ module.exports = {
             path: '/api/V1/model',
             format: 'json',
             headers: {},
-            params: {},
-            mapping: {}
+            urlParameters: {},
+            mapping: {
+                'value': '$.outer.inner.value'
+            },
+            bodyPayloadTemplate: ''
         },
         create: {
 
