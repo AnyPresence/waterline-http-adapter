@@ -19,27 +19,63 @@ describe('Http-helper', function() {
             assert.isDefined(helper.mapFields);
         });
 
-        it('should return a mapped object', function() {
-            var testObject = {
-                id: '16SDNIFOD12DISJ012AN812A',
-                outer: {
-                    inner: {
-                        value: 'test'
-                    },
-                    number: 1234
-                }
-            };
+        it('should return a correctly mapped object for JSON', function() {
+            var payload = require('../stubs/json-response').single;
 
             model.httpAdapter.read.mapping = {
                 desc: '$.outer.inner.value',
                 value: '$.outer.number'
             };
 
-            var o = helper.mapFields(testObject, model, action);
+            var result = helper.mapFields(payload, model, action);
             
-            assert.equal(o.desc, 'test');
-            assert.equal(o.value, 1234);
-            assert.equal(o.id, '16SDNIFOD12DISJ012AN812A');
+            assert.equal(result.desc, 'test');
+            assert.equal(result.value, 1234);
+            assert.equal(result.id, '16SDNIFOD12DISJ012AN812A');
+        });
+
+        it('should properly map an array to an array field', function(){
+            var payload = require('../stubs/json-response').singleArray;
+
+            model.attributes.collection = {
+                type: 'array'
+            };
+
+            model.httpAdapter.read.mapping = {
+                collection: '$.outer.inner'
+            };
+
+            var result = helper.mapFields(payload, model, action);
+            assert.isArray(result.collection);
+
+        });
+
+        it('should return a collection of correctly mapped objects for JSON', function() {
+            var payload = require('../stubs/json-response').collection;
+
+            model.httpAdapter.read.mapping = {
+                desc: '$.outer.inner.value',
+                value: '$.outer.number'
+            };
+
+            var result = helper.mapFields(payload, model, action);
+
+            assert.isArray(result);
+            assert(result.length > 1, 'Expected more than 1 result in the collection');
+        });
+
+        it('should return a correctly mapped object for XML', function() {
+            var payload = require('../stubs/xml-response');
+
+            model.httpAdapter.read.mapping = {
+                desc: '/note/desc/text()'
+            };
+
+            action.format = 'xml';
+
+            var result = helper.mapFields(payload, model, action);
+
+            assert.equal(result.desc, 'A description');
         });
     });
 
@@ -210,18 +246,12 @@ describe('Http-helper', function() {
             assert.isDefined(helper.makeRequest);
         });
 
-        it('should return an error if no options are found for supplied method', function() {
-            helper.makeRequest(connection, model, 'notfound', {}, {}, function(err) {
-                assert.isDefined(err);
-            });
-        });
-
         it('should make a request to the url in the configuration', function(done) {
             nock('http://localhost:1337')
                 .get('/api/V1/model')
                 .reply(200);
 
-            helper.makeRequest(connection, model, 'read', {}, {}, function(err) {
+            helper.makeRequest(connection, model, action, {}, {}, function(err) {
                 done(err);
             });
         });
@@ -236,7 +266,7 @@ describe('Http-helper', function() {
                 'token': 'abc123'
             };
 
-            helper.makeRequest(connection, model, 'read', {}, {}, function(err) {
+            helper.makeRequest(connection, model, action, {}, {}, function(err) {
                 done(err);
             });
         });
@@ -250,7 +280,7 @@ describe('Http-helper', function() {
                 'foo': 'bar'
             };
 
-            helper.makeRequest(connection, model, 'read', {}, {}, function(err) {
+            helper.makeRequest(connection, model, action, {}, {}, function(err) {
                 done(err);
             });
         });

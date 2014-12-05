@@ -98,6 +98,14 @@ describe('Adapter', function() {
                 assert(adapter.identity && adapter.identity === 'waterline-http');
             });
         });
+
+        describe('request function', function() {
+            it('should return an error if no options are found for supplied action', function() {
+                adapter.request('test', 'v1model', 'notfound', {}, {}, function(err) {
+                assert.isDefined(err);
+            });
+        });
+        });
     });
 });
 
