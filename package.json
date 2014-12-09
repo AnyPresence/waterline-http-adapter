@@ -20,7 +20,7 @@
     "lodash": "2.4.1",
     "request": "^2.48.0",
     "xmldom": "^0.1.19",
-    "xpath": "0.0.7"
+    "xpath.js": "^1.0.5"
   },
   "devDependencies": {
     "captains-log": "~0.11.0",

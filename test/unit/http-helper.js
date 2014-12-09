@@ -19,7 +19,7 @@ describe('Http-helper', function() {
             assert.isDefined(helper.mapFields);
         });
 
-        it('should return a correctly mapped object for JSON', function() {
+        it('should return a correctly mapped object for JSON', function(done) {
             var payload = require('../stubs/json-response').single;
 
             model.httpAdapter.read.mapping = {
@@ -27,14 +27,15 @@ describe('Http-helper', function() {
                 value: '$.outer.number'
             };
 
-            var result = helper.mapFields(payload, model, action);
-            
-            assert.equal(result.desc, 'test');
-            assert.equal(result.value, 1234);
-            assert.equal(result.id, '16SDNIFOD12DISJ012AN812A');
+            helper.mapFields(payload, model, action, function(err, result) {
+                assert.equal(result.desc, 'test');
+                assert.equal(result.value, 1234);
+                assert.equal(result.id, '16SDNIFOD12DISJ012AN812A');
+                done();
+            });
         });
 
-        it('should properly map an array to an array field', function(){
+        it('should properly map an array to an array field', function(done){
             var payload = require('../stubs/json-response').singleArray;
 
             model.attributes.collection = {
@@ -45,12 +46,13 @@ describe('Http-helper', function() {
                 collection: '$.outer.inner'
             };
 
-            var result = helper.mapFields(payload, model, action);
-            assert.isArray(result.collection);
-
+            helper.mapFields(payload, model, action, function(err, result) {
+                assert.isArray(result.collection);
+                done(err);
+            });
         });
 
-        it('should return a collection of correctly mapped objects for JSON', function() {
+        it('should return a collection of correctly mapped objects for JSON', function(done) {
             var payload = require('../stubs/json-response').collection;
 
             model.httpAdapter.read.mapping = {
@@ -58,24 +60,87 @@ describe('Http-helper', function() {
                 value: '$.outer.number'
             };
 
-            var result = helper.mapFields(payload, model, action);
-
-            assert.isArray(result);
-            assert(result.length > 1, 'Expected more than 1 result in the collection');
+            helper.mapFields(payload, model, action, function(err, result) {
+                assert.isArray(result);
+                assert(result.length > 1, 'Expected more than 1 result in the collection');
+                assert.equal(result[0].desc, 'test1');
+                assert.equal(result[1].desc, 'test2');
+                done(err);
+            });            
         });
 
-        it('should return a correctly mapped object for XML', function() {
-            var payload = require('../stubs/xml-response');
+        it('should attempt to find a key on the payload if no mapping is present for JSON', function(done) {
+            var payload = require('../stubs/json-response').single;
+
+            model.httpAdapter.read.mapping = {};
+
+            helper.mapFields(payload, model, action, function(err, result) {
+                assert.equal(result.id, payload.id);
+                done(err);
+            });
+        });
+
+        it('should return a correctly mapped object for XML', function(done) {
+            var payload = require('../stubs/xml-response').single;
 
             model.httpAdapter.read.mapping = {
-                desc: '/note/desc/text()'
+                desc: '/v1model/desc/text()'
             };
 
             action.format = 'xml';
 
-            var result = helper.mapFields(payload, model, action);
+            helper.mapFields(payload, model, action, function(err, result) {
+                assert(result.desc === 'A test response', 'Expected ' + result + ' to equal "A description"');
+                done(err);
+            });
+        });
 
-            assert.equal(result.desc, 'A description');
+        it('should attempt to find a key on the payload if no mapping is present for XML', function(done) {
+            var payload = require('../stubs/xml-response').single;
+
+            model.httpAdapter.read.mapping = {};
+
+            action.format = 'xml';
+
+            helper.mapFields(payload, model, action, function(err, result) {
+                assert(result.desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
+                done(err);
+            });            
+        });
+
+        it('should return a collection of correctly mapped objects for XML', function(done) {
+            var payload = require('../stubs/xml-response').collection;
+
+            action.format = 'xml';
+            action.isCollection = true;
+
+            helper.mapFields(payload, model, action, function(err, results) {
+                assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
+                assert.equal(results[0].id, 'ABC123');
+                assert.equal(results[1].id, 'DEF456');
+                assert.equal(results[2].id, 'GHI789');
+                done(err);
+            }); 
+        });
+
+        it('should return a collection of correctly mapped object for XML with configured xpath mapping', function(done) {
+            var payload = require('../stubs/xml-response').collection;
+
+            action.isCollection = true;
+            model.httpAdapter.read.mapping = {
+                desc:'desc/text()'
+            };
+
+            action.format = 'xml';
+
+            helper.mapFields(payload, model, action, function(err, results) {
+                assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
+                //Assert that description mapping worked as expected
+                assert.equal(results[0].desc, 'A test response');
+                assert.equal(results[1].desc, 'Another response');
+                assert.equal(results[2].desc, '');
+                done(err);
+            });
         });
     });
 
