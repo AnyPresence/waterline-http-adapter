@@ -55,10 +55,6 @@ describe('Adapter', function() {
             it('should have the urlParameters property', function() {
                 assert.isDefined(testConnection.urlParameters);
             });
-
-            it('should have the modelMap property', function() {
-                assert.isDefined(testConnection.modelMap);
-            });
         });
     });
 
