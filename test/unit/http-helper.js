@@ -14,6 +14,32 @@ describe('Http-helper', function() {
         action = model.httpAdapter['read'];
     });
 
+    describe('interpolate function', function() {
+        it('should exist', function() {
+            assert.isDefined(helper.interpolate);
+        });
+
+        it('should interpolate a string', function() {
+            var source = 'Value is: {{value}}';
+            var context = {
+                value: 123
+            };
+
+            var result = helper.interpolate(source, context);
+
+            assert.equal(result, 'Value is: 123');
+        });
+
+        it('should return the supplied source if no handlebar syntax is found', function() {
+            var source = 'No interpolation found';
+            var context = {};
+
+            var result = helper.interpolate(source, context);
+
+            assert.equal(result, 'No interpolation found');
+        });
+    });
+
     describe('mapFields function', function() {
         it('should exist', function() {
             assert.isDefined(helper.mapFields);
@@ -83,8 +109,10 @@ describe('Http-helper', function() {
         it('should return a correctly mapped object for XML', function(done) {
             var payload = require('../stubs/xml-response').single;
 
+            var tag = action.objectNameMapping;
+
             model.httpAdapter.read.mapping = {
-                desc: '/v1model/desc/text()'
+                desc: '/' + tag + '/desc/text()'
             };
 
             action.format = 'xml';
@@ -112,7 +140,6 @@ describe('Http-helper', function() {
             var payload = require('../stubs/xml-response').collection;
 
             action.format = 'xml';
-            action.isCollection = true;
 
             helper.mapFields(payload, model, action, function(err, results) {
                 assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
@@ -126,7 +153,6 @@ describe('Http-helper', function() {
         it('should return a collection of correctly mapped object for XML with configured xpath mapping', function(done) {
             var payload = require('../stubs/xml-response').collection;
 
-            action.isCollection = true;
             model.httpAdapter.read.mapping = {
                 desc:'desc/text()'
             };
@@ -189,14 +215,26 @@ describe('Http-helper', function() {
             assert.equal(helper.constructUri(connection, action, options), 'http://localhost:1337/api/V1/model?fizz=bang');
         });
 
-        it('should not append the parameters to the url for a POST', function() {
-            var options = {
-                'fizz': 'bang'
+        it('should correctly interpolate the URL', function() {
+            action.path = '/api/v1/model/{{id}}';
+
+            var context = {
+                id: 'abc123'
             };
 
-            action.verb = 'POST';
+            assert.equal(helper.constructUri(connection, action, {}, context), 'http://localhost:1337/api/v1/model/abc123');
+        });
 
-            assert.equal(helper.constructUri(connection, action, options), 'http://localhost:1337/api/V1/model');
+        it('should correctly interpolate configured URL parameters', function() {
+            action.urlParameters = {
+                user: '{{id}}'
+            };
+
+            var context = {
+                id: '1'
+            };
+
+            assert.equal(helper.constructUri(connection, action, {}, context), 'http://localhost:1337/api/V1/model?user=1');
         });
     });
 
@@ -298,6 +336,20 @@ describe('Http-helper', function() {
 
             assert.isUndefined(headers['Authorization']);
         });
+
+        it('should interpolate configured headers', function() {
+            action.headers = {
+                'Session': '{{id}}'
+            };
+
+            var context = {
+                id: '123'
+            };
+
+            var headers = helper.constructHeaders(connection, options, context);
+
+            assert.equal(headers['Session'], '123');
+        });
     });
 
     describe('constructBody function', function() {
@@ -316,7 +368,7 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200);
 
-            helper.makeRequest(connection, model, action, {}, {}, function(err) {
+            helper.makeRequest(connection, model, action, {}, {}, {}, function(err) {
                 done(err);
             });
         });
@@ -331,7 +383,7 @@ describe('Http-helper', function() {
                 'token': 'abc123'
             };
 
-            helper.makeRequest(connection, model, action, {}, {}, function(err) {
+            helper.makeRequest(connection, model, action, {}, {}, {}, function(err) {
                 done(err);
             });
         });
@@ -345,7 +397,7 @@ describe('Http-helper', function() {
                 'foo': 'bar'
             };
 
-            helper.makeRequest(connection, model, action, {}, {}, function(err) {
+            helper.makeRequest(connection, model, action, {}, {}, {}, function(err) {
                 done(err);
             });
         });

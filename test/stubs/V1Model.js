@@ -20,17 +20,9 @@ module.exports = {
             format: 'json',
             headers: {},
             urlParameters: {},
+            objectNameMapping: 'v1model',
             mapping: {},
             bodyPayloadTemplate: ''
-        },
-        create: {
-
-        },
-        update: {
-
-        },
-        delete: {
-
         }
     }
 };
