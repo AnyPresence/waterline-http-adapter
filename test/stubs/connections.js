@@ -7,9 +7,6 @@ module.exports = {
         passwordPlainText: 'password',
         format: 'json',
         headers: {},
-        urlParameters: {},
-        modelMap: {
-            'v1model': 'V1Model'
-        }
+        urlParameters: {}
     }
 };
