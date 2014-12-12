@@ -4,8 +4,6 @@ var Waterline = require('waterline'),
     path = require('path');
 
 module.exports = function(connections, collections, cb) {
-    process.env.MODEL_DIRECTORY = path.resolve('./test/stubs');
-
     var waterline = new Waterline();
 
     var adapters = {
