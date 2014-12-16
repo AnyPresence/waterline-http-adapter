@@ -38,6 +38,15 @@ describe('Http-helper', function() {
 
             assert.equal(result, 'No interpolation found');
         });
+
+        it('should not fail if passed an undefined source', function() {
+            var source;
+            var context = {};
+
+            var result = helper.interpolate(source, context);
+            
+            assert.equal(result, '');
+        });
     });
 
     describe('mapFields function', function() {
@@ -355,6 +364,17 @@ describe('Http-helper', function() {
     describe('constructBody function', function() {
         it('should exist', function() {
             assert.isDefined(helper.constructBody);
+        });
+
+        it('should return a stringified JSON object', function() {
+            var values = {
+                id: 123
+            };
+
+            var body = helper.constructBody(action, values, {});
+
+            assert(_.isString(body), 'Expected body to be a string');
+
         });
     });
 
