@@ -1,6 +1,7 @@
 var adapter = require('../../'),
     assert = require('chai').assert,
-    connections = require('../stubs/connections');
+    connections = require('../stubs/connections'),
+    nock = require('nock');
 
 var waterline, Model;
 
@@ -72,7 +73,7 @@ describe('Adapter', function() {
         });
     });
 
-    describe('adapter', function() {
+    describe('implementation', function() {
         it('should export correctly for testing', function() {
             assert.isObject(adapter);
         });
@@ -98,9 +99,51 @@ describe('Adapter', function() {
         describe('request function', function() {
             it('should return an error if no options are found for supplied action', function() {
                 adapter.request('test', 'v1model', 'notfound', {}, {}, {}, function(err) {
-                assert.isDefined(err);
+                    assert.isDefined(err);
+                });
             });
-        });
+
+            it('should return a model instance with the correct instance methods', function(done) {
+                nock('http://localhost:1337')
+                    .get('/api/V1/model')
+                    .reply(200, {id: 123, desc: 'A stub object', value: 99});
+
+                adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err, result) {
+                    if (err) return done(err);
+                    assert.isFunction(result[0].ping);
+                    done();
+                });
+            });
+
+            it('should properly handle custom callbacks', function(done) {
+                nock('http://localhost:1337')
+                    .get('/api/V1/model')
+                    .reply(200, {id: 123, desc: 'A stub object', value: 99});
+
+                var before = false;
+                var after = false;
+
+                function callDone() {
+                    if(before && after) return done();
+                }
+
+                Model.beforeRead = function(params, cb) {
+                    before = true;
+                    callDone();
+                    cb();
+                };
+
+                Model.afterRead = function(params, cb) {
+                    console.log(params);
+                    after = true;
+                    callDone();
+                    cb();
+                };
+
+                adapter.request('test', 'v1model', 'read', {}, {}, {}, function() {
+                    
+                });
+            });
         });
     });
 });

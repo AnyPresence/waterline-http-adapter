@@ -11,7 +11,13 @@ module.exports = {
         },
         value: {
             type: 'integer'
+        },
+        ping: function() {
+            return 'pong';
         }
+    },
+    beforeRead: function(params, next) {
+        next();
     },
     httpAdapter: {
         read: {
