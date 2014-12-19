@@ -63,9 +63,9 @@ describe('Http-helper', function() {
             };
 
             helper.mapFields(payload, model, action, function(err, result) {
-                assert.equal(result.desc, 'test');
-                assert.equal(result.value, 1234);
-                assert.equal(result.id, '16SDNIFOD12DISJ012AN812A');
+                assert.equal(result[0].desc, 'test');
+                assert.equal(result[0].value, 1234);
+                assert.equal(result[0].id, '16SDNIFOD12DISJ012AN812A');
                 done();
             });
         });
@@ -82,7 +82,7 @@ describe('Http-helper', function() {
             };
 
             helper.mapFields(payload, model, action, function(err, result) {
-                assert.isArray(result.collection);
+                assert.isArray(result[0].collection);
                 done(err);
             });
         });
@@ -110,7 +110,7 @@ describe('Http-helper', function() {
             model.httpAdapter.read.mapping = {};
 
             helper.mapFields(payload, model, action, function(err, result) {
-                assert.equal(result.id, payload.id);
+                assert.equal(result[0].id, payload.id);
                 done(err);
             });
         });
@@ -127,7 +127,7 @@ describe('Http-helper', function() {
             action.format = 'xml';
 
             helper.mapFields(payload, model, action, function(err, result) {
-                assert(result.desc === 'A test response', 'Expected ' + result + ' to equal "A description"');
+                assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A description"');
                 done(err);
             });
         });
@@ -140,7 +140,7 @@ describe('Http-helper', function() {
             action.format = 'xml';
 
             helper.mapFields(payload, model, action, function(err, result) {
-                assert(result.desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
+                assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
                 done(err);
             });            
         });
