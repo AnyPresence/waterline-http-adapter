@@ -134,7 +134,6 @@ describe('Adapter', function() {
                 };
 
                 Model.afterRead = function(params, cb) {
-                    console.log(params);
                     after = true;
                     callDone();
                     cb();

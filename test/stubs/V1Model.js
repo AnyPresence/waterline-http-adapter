@@ -16,9 +16,6 @@ module.exports = {
             return 'pong';
         }
     },
-    beforeRead: function(params, next) {
-        next();
-    },
     httpAdapter: {
         read: {
             verb: 'GET',
