@@ -107,16 +107,6 @@ describe('Adapter', function() {
                 });
             });
 
-            it('should support callbacks', function(done) {
-                nock('http://localhost:1337')
-                    .get('/api/V1/model')
-                    .reply(200, {id: 123, desc: 'A stub object', value: 99});
-
-                adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err) {
-                    done(err);
-                });
-            });
-
             it('should return an error if no options are found for supplied action', function() {
                 adapter.request('test', 'v1model', 'notfound', {}, {}, {}, function(err) {
                     assert.isDefined(err);
@@ -135,32 +125,68 @@ describe('Adapter', function() {
                 });
             });
 
-            it('should properly handle custom callbacks', function(done) {
-                nock('http://localhost:1337')
-                    .get('/api/V1/model')
-                    .reply(200, {id: 123, desc: 'A stub object', value: 99});
+            describe('callbacks', function() {
+                afterEach(function(done) {
+                    delete Model.beforeRead;
+                    delete Model.afterRead;
+                    done();
+                });
 
-                var before = false;
-                var after = false;
+                it('should expose the proper variables to before* callback', function(done) {
+                    nock('http://localhost:1337')
+                        .get('/api/V1/model')
+                        .reply(200, {id: 123, desc: 'A stub object', value: 99});
 
-                function callDone() {
-                    if(before && after) return done();
-                }
+                    Model.beforeRead = function(params) {
+                        assert.isDefined(params.action);
+                        assert.isDefined(params.urlParams);
+                        assert.isDefined(params.values);
+                        assert.isDefined(params.context);
+                        done();
+                    };
 
-                Model.beforeRead = function(params, cb) {
-                    before = true;
-                    callDone();
-                    cb();
-                };
+                    adapter.request('test', 'v1model', 'read', {}, {}, {}, function() {});
+                });
 
-                Model.afterRead = function(params, cb) {
-                    after = true;
-                    callDone();
-                    cb();
-                };
+                it('should expose additional variables in the after* callback', function(done) {
+                    nock('http://localhost:1337')
+                        .get('/api/V1/model')
+                        .reply(200, {id: 123, desc: 'A stub object', value: 99});
 
-                adapter.request('test', 'v1model', 'read', {}, {}, {}, function() {
-                    
+                    Model.afterRead = function(params) {
+                        assert.isDefined(params.response);
+                        assert.isDefined(params.models);
+                        done();
+                    };
+
+                    adapter.request('test', 'v1model', 'read', {}, {}, {}, function() {});
+                });
+
+                it('should properly handle callbacks', function(done) {
+                    nock('http://localhost:1337')
+                        .get('/api/V1/model')
+                        .reply(200, {id: 123, desc: 'A stub object', value: 99});
+
+                    var before = false;
+                    var after = false;
+
+                    function callDone() {
+                        if(before && after) return done();
+                    }
+
+                    Model.beforeRead = function(params, next) {
+                        before = true;
+                        callDone();
+                        next();
+                    };
+
+                    Model.afterRead = function(params, next) {
+                        after = true;
+                        callDone();
+                        next();
+                    };
+
+                    adapter.request('test', 'v1model', 'read', {}, {}, {}, function() {});
                 });
             });
         });
