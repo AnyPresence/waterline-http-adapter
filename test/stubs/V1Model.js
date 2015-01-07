@@ -16,7 +16,7 @@ module.exports = {
             return 'pong';
         }
     },
-    httpAdapter: {
+    http: {
         read: {
             verb: 'GET',
             path: '/api/V1/model',
@@ -24,6 +24,7 @@ module.exports = {
             headers: {},
             urlParameters: {},
             objectNameMapping: 'v1model',
+            pathSelector: '',
             mapping: {},
             bodyPayloadTemplate: ''
         }

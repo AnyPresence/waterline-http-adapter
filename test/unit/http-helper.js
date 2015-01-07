@@ -11,7 +11,7 @@ describe('Http-helper', function() {
     beforeEach(function() {
         connection = _.cloneDeep(testConnection);
         model = _.cloneDeep(v1model);
-        action = model.httpAdapter['read'];
+        action = model.http['read'];
     });
 
     describe('interpolate function', function() {
@@ -57,7 +57,7 @@ describe('Http-helper', function() {
         it('should return a correctly mapped object for JSON', function(done) {
             var payload = require('../stubs/json-response').single;
 
-            model.httpAdapter.read.mapping = {
+            model.http.read.mapping = {
                 desc: '$.outer.inner.value',
                 value: '$.outer.number'
             };
@@ -77,7 +77,7 @@ describe('Http-helper', function() {
                 type: 'array'
             };
 
-            model.httpAdapter.read.mapping = {
+            model.http.read.mapping = {
                 collection: '$.outer.inner'
             };
 
@@ -90,7 +90,7 @@ describe('Http-helper', function() {
         it('should return a collection of correctly mapped objects for JSON', function(done) {
             var payload = require('../stubs/json-response').collection;
 
-            model.httpAdapter.read.mapping = {
+            model.http.read.mapping = {
                 desc: '$.outer.inner.value',
                 value: '$.outer.number'
             };
@@ -107,7 +107,7 @@ describe('Http-helper', function() {
         it('should attempt to find a key on the payload if no mapping is present for JSON', function(done) {
             var payload = require('../stubs/json-response').single;
 
-            model.httpAdapter.read.mapping = {};
+            model.http.read.mapping = {};
 
             helper.mapFields(payload, model, action, function(err, result) {
                 assert.equal(result[0].id, payload.id);
@@ -120,9 +120,11 @@ describe('Http-helper', function() {
 
             var tag = action.objectNameMapping;
 
-            model.httpAdapter.read.mapping = {
+            model.http.read.mapping = {
                 desc: '/' + tag + '/desc/text()'
             };
+
+            model.http.read.pathSelector = '/v1model';
 
             action.format = 'xml';
 
@@ -135,7 +137,9 @@ describe('Http-helper', function() {
         it('should attempt to find a key on the payload if no mapping is present for XML', function(done) {
             var payload = require('../stubs/xml-response').single;
 
-            model.httpAdapter.read.mapping = {};
+            model.http.read.mapping = {};
+
+            model.http.read.pathSelector = '/v1model';
 
             action.format = 'xml';
 
@@ -147,6 +151,8 @@ describe('Http-helper', function() {
 
         it('should return a collection of correctly mapped objects for XML', function(done) {
             var payload = require('../stubs/xml-response').collection;
+
+            model.http.read.pathSelector = '/v1models/v1model';
 
             action.format = 'xml';
 
@@ -162,9 +168,11 @@ describe('Http-helper', function() {
         it('should return a collection of correctly mapped object for XML with configured xpath mapping', function(done) {
             var payload = require('../stubs/xml-response').collection;
 
-            model.httpAdapter.read.mapping = {
+            model.http.read.mapping = {
                 desc:'desc/text()'
             };
+
+            model.http.read.pathSelector = '/v1models/v1model';
 
             action.format = 'xml';
 
@@ -175,6 +183,38 @@ describe('Http-helper', function() {
                 assert.equal(results[1].desc, 'Another response');
                 assert.equal(results[2].desc, '');
                 done(err);
+            });
+        });
+
+        it('should properly map a simple field value for json', function(done) {
+            var payload = require('../stubs/json-response').single;
+
+            model.http.read.mapping = {
+                'value': 'id'
+            };
+
+            action.format = 'json';
+
+            helper.mapFields(payload, model, action, function(err, results) {
+                assert.equal(results[0].value, '16SDNIFOD12DISJ012AN812A');
+                done();
+            });
+        });
+
+        it('should properly map a simple field value for xml', function(done) {
+            var payload = require('../stubs/xml-response').collection;
+
+            model.http.read.mapping = {
+                'value': 'id'
+            };
+
+            model.http.read.pathSelector = '/v1models/v1model';
+
+            action.format = 'xml';
+
+            helper.mapFields(payload, model, action, function(err, results) {
+                assert.equal(results[0].value, '<id>ABC123</id>');
+                done();
             });
         });
     });
@@ -251,7 +291,7 @@ describe('Http-helper', function() {
         var options;
 
         beforeEach(function() {
-            options = model.httpAdapter.read;
+            options = model.http.read;
         });
 
         it('should exist', function() {
@@ -399,7 +439,7 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200);
 
-            model.httpAdapter.read.headers = {
+            model.http.read.headers = {
                 'token': 'abc123'
             };
 
