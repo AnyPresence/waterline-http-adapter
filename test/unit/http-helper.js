@@ -62,6 +62,8 @@ describe('Http-helper', function() {
                 value: '$.outer.number'
             };
 
+            model.http.read.pathSelector = '$.*';
+
             helper.mapFields(payload, model, action, function(err, result) {
                 assert.equal(result[0].desc, 'test');
                 assert.equal(result[0].value, 1234);
@@ -81,6 +83,8 @@ describe('Http-helper', function() {
                 collection: '$.outer.inner'
             };
 
+            model.http.read.pathSelector = '$.*';
+
             helper.mapFields(payload, model, action, function(err, result) {
                 assert.isArray(result[0].collection);
                 done(err);
@@ -94,6 +98,8 @@ describe('Http-helper', function() {
                 desc: '$.outer.inner.value',
                 value: '$.outer.number'
             };
+
+            model.http.read.pathSelector = '$.v1models.*';
 
             helper.mapFields(payload, model, action, function(err, result) {
                 assert.isArray(result);
@@ -109,8 +115,10 @@ describe('Http-helper', function() {
 
             model.http.read.mapping = {};
 
+            model.http.read.pathSelector = '$.*';
+
             helper.mapFields(payload, model, action, function(err, result) {
-                assert.equal(result[0].id, payload.id);
+                assert.equal(result[0].id, payload.v1model.id);
                 done(err);
             });
         });

@@ -1,37 +1,44 @@
 {
     "single": {
-        "id": "16SDNIFOD12DISJ012AN812A",
-        "outer": {
-            "inner": {
-                "value": "test"
-            },
-            "number": 1234
-        }
-    },
-    "singleArray": {
-        "id": "16SDNIFOD12KGCCS012AC11MF",
-        "outer": {
-            "inner": ["a", "b", "c"]
-        }
-    },
-    "collection": [
-        {
-            "id": "16SDNIFOD12KGHJ012AN455C",
+        "v1model": {
+            "id": "16SDNIFOD12DISJ012AN812A",
             "outer": {
                 "inner": {
-                    "value": "test1"
+                    "value": "test"
                 },
                 "number": 1234
             }
-        },
-        {
-            "id": "A5SDNIFOD12DISJ0BB6N8312",
+        }
+    },
+    "singleArray": {
+        "v1model": {
+            "id": "16SDNIFOD12KGCCS012AC11MF",
             "outer": {
-                "inner": {
-                    "value": "test2"
-                },
-                "number": 5678
+                "inner": ["a", "b", "c"]
             }
         }
-    ]
+    },
+    "collection": {
+        "v1models": 
+        [
+            {
+                "id": "16SDNIFOD12KGHJ012AN455C",
+                "outer": {
+                    "inner": {
+                        "value": "test1"
+                    },
+                    "number": 1234
+                }
+            },
+            {
+                "id": "A5SDNIFOD12DISJ0BB6N8312",
+                "outer": {
+                    "inner": {
+                        "value": "test2"
+                    },
+                    "number": 5678
+                }
+            }
+        ]
+    }
 }

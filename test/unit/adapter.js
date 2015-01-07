@@ -14,6 +14,7 @@ before(function(done) {
         Model = ontology.collections['v1model'];
         done(err);
     });
+    var jsonResponse = require('../stubs/json-response').single;
 });
 
 describe('Adapter', function() {
