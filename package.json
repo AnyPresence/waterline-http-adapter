@@ -16,7 +16,6 @@
   "dependencies": {
     "JSONPath": "^0.10.0",
     "URIjs": "1.14.1",
-    "bluebird": "^2.5.1",
     "handlebars": "^2.0.0",
     "inflection": "^1.5.3",
     "jsonpath-object-transform": "^1.0.3",

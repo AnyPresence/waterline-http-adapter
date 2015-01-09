@@ -98,16 +98,6 @@ describe('Adapter', function() {
         });
 
         describe('request function', function() {
-            it('should support promises', function(done) {
-                nock('http://localhost:1337')
-                    .get('/api/V1/model')
-                    .reply(200, {id: 123, desc: 'A stub object', value: 99});
-
-                adapter.request('test', 'v1model', 'read', {}, {}, {}).then(function() {
-                    done();
-                });
-            });
-
             it('should return an error if no options are found for supplied action', function() {
                 adapter.request('test', 'v1model', 'notfound', {}, {}, {}, function(err) {
                     assert.isDefined(err);
