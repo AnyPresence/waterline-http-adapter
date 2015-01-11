@@ -293,6 +293,14 @@ describe('Http-helper', function() {
 
             assert.equal(helper.constructUri(connection, action, {}, context), 'http://localhost:1337/api/V1/model?user=1');
         });
+
+        it('should correctly create a URL that has a portion of the path in the base URL', function() {
+            connection.baseUri = 'http://localhost:1337/api/v1';
+
+            action.path = '/model';
+
+            assert.equal(helper.constructUri(connection, action, {}, {}), 'http://localhost:1337/api/v1/model');
+        });
     });
 
     describe('constructHeaders function', function() {
