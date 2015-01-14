@@ -95,6 +95,26 @@ describe('Adapter', function() {
             it('should implement an identity property', function() {
                 assert(adapter.identity && adapter.identity === 'waterline-http');
             });
+
+            it('should implement a buildUrl function', function() {
+                assert.isFunction(adapter.buildUrl);
+            })
+        });
+
+        describe('buildUrl function', function() {
+            it('should return the expected URL', function(done) {
+                Model.buildUrl('read', {}, {}, function(err, url) {
+                    assert.equal(url, 'http://localhost:1337/api/V1/model');
+                    done(err);
+                });
+            });
+
+            it('should return an error if no configuration is found for supplied action', function(done) {
+                Model.buildUrl('notread', {}, {}, function(err) {
+                    assert.isDefined(err);
+                    done();
+                });
+            });
         });
 
         describe('request function', function() {
