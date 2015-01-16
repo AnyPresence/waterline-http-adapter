@@ -432,6 +432,12 @@ describe('Http-helper', function() {
             assert(_.isString(body), 'Expected body to be a string');
 
         });
+
+        it('should return undefined if nothing can be used as a body', function() {
+            var body = helper.constructBody(action, {}, {});
+
+            assert(_.isEmpty(body), 'Expected body to be empty.');
+        });
     });
 
     describe('makeRequest function', function() {
