@@ -221,8 +221,28 @@ describe('Http-helper', function() {
             action.format = 'xml';
 
             helper.mapFields(payload, model, action, function(err, results) {
-                assert.equal(results[0].value, '<id>ABC123</id>');
+                assert.equal(results[0].value, 'ABC123');
                 done();
+            });
+        });
+
+        it('should properly determine a mapping is an xpath value', function(done) {
+            var payload = require('../stubs/xml-response').single;
+
+            model.http.read.mapping = {
+                'value': '/v1model/id'
+            };
+
+            model.http.read.pathSelector = '/v1model';
+
+            action.format = 'xml';
+
+            helper.mapFields(payload, model, action, function(err, results) {
+                // result.value should contain the <id> tags since our xpath selector
+                // doesn't include text(). the text() path will only be appended if
+                // the mapper doesn't think it's an Xpath selector.
+                assert.equal(results[0].value, '<id>ABC123</id>');
+                done(err);
             });
         });
     });
