@@ -375,12 +375,12 @@ describe('Http-helper', function() {
             assert.equal(headers['Content-Type'], 'application/xml');
         });
 
-        it('should set the accepts header to json if configured', function() {
+        it('should set the accept header to json if configured', function() {
             options.format = 'json';
 
             var headers = helper.constructHeaders(connection, options);
 
-            assert.equal(headers['Accepts'], 'application/json');
+            assert.equal(headers['Accept'], 'application/json');
         });
 
         it('should use the adapter configuration if the route is set to form-encoded', function() {
@@ -388,7 +388,7 @@ describe('Http-helper', function() {
 
             var headers = helper.constructHeaders(connection, options);
 
-            assert.equal(headers['Accepts'], 'application/json');
+            assert.equal(headers['Accept'], 'application/json');
         });
 
         it('should use the route configuration over the adapter configuration', function() {
@@ -397,7 +397,7 @@ describe('Http-helper', function() {
 
             var headers = helper.constructHeaders(connection, options);
 
-            assert.equal(headers['Accepts'], 'application/json');
+            assert.equal(headers['Accept'], 'application/json');
         });
 
         it('should create an Authorization basic header if supplied username and password', function() {
