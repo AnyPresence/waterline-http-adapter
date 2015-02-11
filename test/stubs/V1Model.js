@@ -25,8 +25,15 @@ module.exports = {
             urlParameters: {},
             objectNameMapping: 'v1model',
             pathSelector: '$.*',
-            mapping: {},
-            bodyPayloadTemplate: ''
+            bodyPayloadTemplate: '',
+            mapping: {
+                response: {
+
+                },
+                request: {
+                    
+                }
+            }
         }
     }
 };
