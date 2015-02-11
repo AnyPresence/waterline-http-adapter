@@ -263,11 +263,22 @@ describe('Http-helper', function() {
                 var testObj;
 
                 beforeEach(function() {
-                    testObj = require('../stubs/json-response').single;
+                    testObj = {
+                        id: 'ABC123',
+                        value: 'SomeVal',
+                        name: 'test'
+                    };
                 });
 
-                it('should return a properly mapped', function(done) {
+                it('should return a properly mapped object', function(done) {
+                    model.http.read.mapping.request = {
+                        id: 'a_field',
+                        value: 'the_value'
+                    };
+
                     helper.mapRequest(testObj, model, action, function(err, res) {
+                        assert.equal(res[0].a_field, 'ABC123');
+                        assert.equal(res[0].the_value, 'SomeVal');
                         done(err);
                     });
                 });
