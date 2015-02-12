@@ -264,21 +264,63 @@ describe('Http-helper', function() {
 
                 beforeEach(function() {
                     testObj = {
-                        id: 'ABC123',
-                        value: 'SomeVal',
+                        id: 123,
+                        value: 55,
                         name: 'test'
                     };
                 });
 
-                it('should return a properly mapped object', function(done) {
+                it('should return a properly mapped object with mapping', function(done) {
                     model.http.read.mapping.request = {
                         id: 'a_field',
                         value: 'the_value'
                     };
 
                     helper.mapRequest(testObj, model, action, function(err, res) {
-                        assert.equal(res[0].a_field, 'ABC123');
-                        assert.equal(res[0].the_value, 'SomeVal');
+                        if(err) return done(err);
+                        assert.equal(res.a_field, 123);
+                        assert.equal(res.the_value, 55);
+                        done();
+                    });
+                });
+
+                it('should return a properly mapped object without mapping', function(done) {
+                    model.http.read.mapping.request = {};
+
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        if(err) return done(err);
+                        assert.equal(res.id, 123);
+                        done();
+                    });
+                });
+            });
+
+            describe('for XML', function() {
+                var testObj;
+
+                beforeEach(function() {
+                    action.format = 'xml';
+                    testObj = {
+                        value: 'something'
+                    };
+                });
+
+                it('should return a properly formatted payload with no mapping', function(done) {
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        var expectedXml = '<v1model><value>something</value></v1model>';
+                        assert.equal(expectedXml, res);
+                        done(err);
+                    });
+                });
+
+                it('should return a properly mapped payload with mapping', function(done) {
+                    action.mapping.request = {
+                        'value': 'some_value'
+                    };
+
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        var expectedXml = '<v1model><some_value>something</some_value></v1model>';
+                        assert.equal(expectedXml, res);
                         done(err);
                     });
                 });
@@ -483,21 +525,41 @@ describe('Http-helper', function() {
             assert.isDefined(helper.constructBody);
         });
 
-        it('should return a stringified JSON object', function() {
+        it('should return a stringified JSON object', function(done) {
             var values = {
-                id: 123
+                id: 123,
+                desc: 'abc',
+                value: 55
             };
 
-            var body = helper.constructBody(action, values, {});
-
-            assert(_.isString(body), 'Expected body to be a string');
-
+            helper.constructBody(action, values, model, {}, function(err, res) {
+                if(err) return done(err);
+                assert(_.isString(res), 'Expected body to be a string');
+                done(err);
+            });
         });
 
-        it('should return undefined if nothing can be used as a body', function() {
-            var body = helper.constructBody(action, {}, {});
+        it('should return a singular object if the value is a single object', function(done) {
+            var values = {
+                id: 123,
+                desc: 'abc',
+                value: 55
+            };
 
-            assert(_.isEmpty(body), 'Expected body to be empty.');
+            helper.constructBody(action, values, model, {}, function(err, res) {
+                if(err) return done(err);
+                var parsedResults = JSON.parse(res);
+                assert(!_.isArray(parsedResults), 'Should not be a collection');
+                done();
+            });
+        });
+
+        it('should return undefined if nothing can be used as a body', function(done) {
+            helper.constructBody(action, {}, model, {}, function(err, res) {
+                if(err) return done(err);
+                assert(_.isEmpty(res), 'Expected body to be empty.');
+                done();
+            });
         });
     });
 

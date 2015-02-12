@@ -1,7 +1,6 @@
 var Waterline = require('waterline'),
     adapter = require('../'),
-    _ = require('lodash'),
-    path = require('path');
+    _ = require('lodash');
 
 //Stub the global sails object, for logging
 sails = {

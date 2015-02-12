@@ -103,10 +103,17 @@ describe('Adapter', function() {
                 });
             });
 
+            it('should return a formatted error', function(done) {
+                adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err, res) {
+                    assert.isObject(err.error);
+                    done();
+                });
+            });
+
             it('should return a model instance with the correct instance methods', function(done) {
                 nock('http://localhost:1337')
                     .get('/api/V1/model')
-                    .reply(200, {id: 123, desc: 'A stub object', value: 99});
+                    .reply(200, [{id: 123, desc: 'A stub object', value: 99}]);
 
                 adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err, result) {
                     if (err) return done(err);
