@@ -62,6 +62,7 @@ describe('Http-helper', function() {
                     model.http.read.mapping.response = {
                         desc: '$.outer.inner.value',
                         value: '$.outer.number',
+                        longFieldName: 'long_field_name',
                         id: 'id'
                     };
 
@@ -71,6 +72,7 @@ describe('Http-helper', function() {
                         assert.equal(result[0].desc, 'test');
                         assert.equal(result[0].value, 1234);
                         assert.equal(result[0].id, '16SDNIFOD12DISJ012AN812A');
+                        assert.equal(result[0].longFieldName, 'test');
                         done();
                     });
                 });

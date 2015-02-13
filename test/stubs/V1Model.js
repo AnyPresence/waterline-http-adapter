@@ -12,6 +12,9 @@ module.exports = {
         value: {
             type: 'integer'
         },
+        longFieldName: {
+            type: 'string'
+        },
         ping: function() {
             return 'pong';
         }
@@ -27,12 +30,8 @@ module.exports = {
             pathSelector: '$.*',
             bodyPayloadTemplate: '',
             mapping: {
-                response: {
-
-                },
-                request: {
-                    
-                }
+                response: {},
+                request: {}
             }
         }
     }
