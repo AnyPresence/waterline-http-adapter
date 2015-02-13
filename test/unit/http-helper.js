@@ -49,200 +49,283 @@ describe('Http-helper', function() {
         });
     });
 
-    describe('mapFields function', function() {
-        it('should exist', function() {
-            assert.isDefined(helper.mapFields);
-        });
+    describe('field mapping', function() {
+        describe('mapResponse function', function() {
+            it('should exist', function() {
+                assert.isDefined(helper.mapResponse);
+            });
 
-        it('should return a correctly mapped object for JSON', function(done) {
-            var payload = require('../stubs/json-response').single;
+            describe('for JSON', function() {
+                it('should return a correctly mapped object', function(done) {
+                    var payload = require('../stubs/json-response').single;
 
-            model.http.read.mapping = {
-                desc: '$.outer.inner.value',
-                value: '$.outer.number'
-            };
+                    model.http.read.mapping.response = {
+                        desc: '$.outer.inner.value',
+                        value: '$.outer.number',
+                        longFieldName: 'long_field_name',
+                        id: 'id'
+                    };
 
-            model.http.read.pathSelector = '$.*';
+                    model.http.read.pathSelector = '$.*';
 
-            helper.mapFields(payload, model, action, function(err, result) {
-                assert.equal(result[0].desc, 'test');
-                assert.equal(result[0].value, 1234);
-                assert.equal(result[0].id, '16SDNIFOD12DISJ012AN812A');
-                done();
+                    helper.mapResponse(payload, model, action, function(err, result) {
+                        assert.equal(result[0].desc, 'test');
+                        assert.equal(result[0].value, 1234);
+                        assert.equal(result[0].id, '16SDNIFOD12DISJ012AN812A');
+                        assert.equal(result[0].longFieldName, 'test');
+                        done();
+                    });
+                });
+
+                it('should properly map an array to an array field', function(done){
+                    var payload = require('../stubs/json-response').singleArray;
+
+                    model.attributes.collection = {
+                        type: 'array'
+                    };
+
+                    model.http.read.mapping.response = {
+                        collection: '$.outer.inner'
+                    };
+
+                    model.http.read.pathSelector = '$.*';
+
+                    helper.mapResponse(payload, model, action, function(err, result) {
+                        assert.isArray(result[0].collection);
+                        done(err);
+                    });
+                });
+
+                it('should return a collection of correctly mapped object', function(done) {
+                    var payload = require('../stubs/json-response').collection;
+
+                    model.http.read.mapping.response = {
+                        desc: '$.outer.inner.value',
+                        value: '$.outer.number'
+                    };
+
+                    model.http.read.pathSelector = '$.v1models.*';
+
+                    helper.mapResponse(payload, model, action, function(err, result) {
+                        assert.isArray(result);
+                        assert(result.length > 1, 'Expected more than 1 result in the collection');
+                        assert.equal(result[0].desc, 'test1');
+                        assert.equal(result[1].desc, 'test2');
+                        done(err);
+                    });            
+                });
+
+
+                it('should attempt to find a key on the payload if no mapping is present', function(done) {
+                    var payload = require('../stubs/json-response').single;
+
+                    model.http.read.mapping.response = {};
+
+                    model.http.read.pathSelector = '$.*';
+
+                    helper.mapResponse(payload, model, action, function(err, result) {
+                        assert.equal(result[0].id, payload.v1model.id);
+                        done(err);
+                    });
+                });
+
+                it('should properly map a simple field value', function(done) {
+                    var payload = require('../stubs/json-response').single;
+
+                    model.http.read.mapping.response = {
+                        'value': 'id'
+                    };
+
+                    action.format = 'json';
+
+                    helper.mapResponse(payload, model, action, function(err, results) {
+                        assert.equal(results[0].value, '16SDNIFOD12DISJ012AN812A');
+                        done();
+                    });
+                });
+            });
+
+            describe('for XML', function() {
+                it('should return a correctly mapped object', function(done) {
+                    var payload = require('../stubs/xml-response').single;
+
+                    var tag = action.objectNameMapping;
+
+                    model.http.read.mapping.response = {
+                        desc: '/' + tag + '/desc/text()'
+                    };
+
+                    model.http.read.pathSelector = '/v1model';
+
+                    action.format = 'xml';
+
+                    helper.mapResponse(payload, model, action, function(err, result) {
+                        assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A description"');
+                        done(err);
+                    });
+                });
+
+                it('should attempt to find a key on the payload if no mapping is present', function(done) {
+                    var payload = require('../stubs/xml-response').single;
+
+                    model.http.read.mapping.response = {};
+
+                    model.http.read.pathSelector = '/v1model';
+
+                    action.format = 'xml';
+
+                    helper.mapResponse(payload, model, action, function(err, result) {
+                        assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
+                        done(err);
+                    });            
+                });
+
+                it('should return a collection of correctly mapped objects', function(done) {
+                    var payload = require('../stubs/xml-response').collection;
+
+                    model.http.read.pathSelector = '/v1models/v1model';
+
+                    action.format = 'xml';
+
+                    helper.mapResponse(payload, model, action, function(err, results) {
+                        assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
+                        assert.equal(results[0].id, 'ABC123');
+                        assert.equal(results[1].id, 'DEF456');
+                        assert.equal(results[2].id, 'GHI789');
+                        done(err);
+                    }); 
+                });
+
+                it('should return a collection of correctly mapped object with configured xpath mapping', function(done) {
+                    var payload = require('../stubs/xml-response').collection;
+
+                    model.http.read.mapping.response = {
+                        desc:'desc/text()'
+                    };
+
+                    model.http.read.pathSelector = '/v1models/v1model';
+
+                    action.format = 'xml';
+
+                    helper.mapResponse(payload, model, action, function(err, results) {
+                        assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
+                        //Assert that description mapping worked as expected
+                        assert.equal(results[0].desc, 'A test response');
+                        assert.equal(results[1].desc, 'Another response');
+                        assert.equal(results[2].desc, '');
+                        done(err);
+                    });
+                });
+
+                it('should properly map a simple field value', function(done) {
+                    var payload = require('../stubs/xml-response').collection;
+
+                    model.http.read.mapping.response = {
+                        'value': 'id'
+                    };
+
+                    model.http.read.pathSelector = '/v1models/v1model';
+
+                    action.format = 'xml';
+
+                    helper.mapResponse(payload, model, action, function(err, results) {
+                        assert.equal(results[0].value, 'ABC123');
+                        done();
+                    });
+                });
+
+                it('should properly determine a mapping is an xpath value', function(done) {
+                    var payload = require('../stubs/xml-response').single;
+
+                    model.http.read.mapping.response = {
+                        'value': 'id'
+                    };
+
+                    model.http.read.pathSelector = '/v1model';
+
+                    action.format = 'xml';
+
+                    helper.mapResponse(payload, model, action, function(err, results) {
+                        // result.value should contain the <id> tags since our xpath selector
+                        // doesn't include text(). the text() path will only be appended if
+                        // the mapper doesn't think it's an Xpath selector.
+                        assert.equal(results[0].value, 'ABC123');
+                        done(err);
+                    });
+                });
             });
         });
 
-        it('should properly map an array to an array field', function(done){
-            var payload = require('../stubs/json-response').singleArray;
-
-            model.attributes.collection = {
-                type: 'array'
-            };
-
-            model.http.read.mapping = {
-                collection: '$.outer.inner'
-            };
-
-            model.http.read.pathSelector = '$.*';
-
-            helper.mapFields(payload, model, action, function(err, result) {
-                assert.isArray(result[0].collection);
-                done(err);
+        describe('mapRequest function', function() {
+            it('should exist', function() {
+                assert.isDefined(helper.mapRequest);
             });
-        });
 
-        it('should return a collection of correctly mapped objects for JSON', function(done) {
-            var payload = require('../stubs/json-response').collection;
+            describe('for JSON', function() {
+                var testObj;
 
-            model.http.read.mapping = {
-                desc: '$.outer.inner.value',
-                value: '$.outer.number'
-            };
+                beforeEach(function() {
+                    testObj = {
+                        id: 123,
+                        value: 55,
+                        name: 'test'
+                    };
+                });
 
-            model.http.read.pathSelector = '$.v1models.*';
+                it('should return a properly mapped object with mapping', function(done) {
+                    model.http.read.mapping.request = {
+                        id: 'a_field',
+                        value: 'the_value'
+                    };
 
-            helper.mapFields(payload, model, action, function(err, result) {
-                assert.isArray(result);
-                assert(result.length > 1, 'Expected more than 1 result in the collection');
-                assert.equal(result[0].desc, 'test1');
-                assert.equal(result[1].desc, 'test2');
-                done(err);
-            });            
-        });
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        if(err) return done(err);
+                        assert.equal(res.a_field, 123);
+                        assert.equal(res.the_value, 55);
+                        done();
+                    });
+                });
 
-        it('should attempt to find a key on the payload if no mapping is present for JSON', function(done) {
-            var payload = require('../stubs/json-response').single;
+                it('should return a properly mapped object without mapping', function(done) {
+                    model.http.read.mapping.request = {};
 
-            model.http.read.mapping = {};
-
-            model.http.read.pathSelector = '$.*';
-
-            helper.mapFields(payload, model, action, function(err, result) {
-                assert.equal(result[0].id, payload.v1model.id);
-                done(err);
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        if(err) return done(err);
+                        assert.equal(res.id, 123);
+                        done();
+                    });
+                });
             });
-        });
 
-        it('should return a correctly mapped object for XML', function(done) {
-            var payload = require('../stubs/xml-response').single;
+            describe('for XML', function() {
+                var testObj;
 
-            var tag = action.objectNameMapping;
+                beforeEach(function() {
+                    action.format = 'xml';
+                    testObj = {
+                        value: 'something'
+                    };
+                });
 
-            model.http.read.mapping = {
-                desc: '/' + tag + '/desc/text()'
-            };
+                it('should return a properly formatted payload with no mapping', function(done) {
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        var expectedXml = '<v1model><value>something</value></v1model>';
+                        assert.equal(expectedXml, res);
+                        done(err);
+                    });
+                });
 
-            model.http.read.pathSelector = '/v1model';
+                it('should return a properly mapped payload with mapping', function(done) {
+                    action.mapping.request = {
+                        'value': 'some_value'
+                    };
 
-            action.format = 'xml';
-
-            helper.mapFields(payload, model, action, function(err, result) {
-                assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A description"');
-                done(err);
-            });
-        });
-
-        it('should attempt to find a key on the payload if no mapping is present for XML', function(done) {
-            var payload = require('../stubs/xml-response').single;
-
-            model.http.read.mapping = {};
-
-            model.http.read.pathSelector = '/v1model';
-
-            action.format = 'xml';
-
-            helper.mapFields(payload, model, action, function(err, result) {
-                assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
-                done(err);
-            });            
-        });
-
-        it('should return a collection of correctly mapped objects for XML', function(done) {
-            var payload = require('../stubs/xml-response').collection;
-
-            model.http.read.pathSelector = '/v1models/v1model';
-
-            action.format = 'xml';
-
-            helper.mapFields(payload, model, action, function(err, results) {
-                assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
-                assert.equal(results[0].id, 'ABC123');
-                assert.equal(results[1].id, 'DEF456');
-                assert.equal(results[2].id, 'GHI789');
-                done(err);
-            }); 
-        });
-
-        it('should return a collection of correctly mapped object for XML with configured xpath mapping', function(done) {
-            var payload = require('../stubs/xml-response').collection;
-
-            model.http.read.mapping = {
-                desc:'desc/text()'
-            };
-
-            model.http.read.pathSelector = '/v1models/v1model';
-
-            action.format = 'xml';
-
-            helper.mapFields(payload, model, action, function(err, results) {
-                assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
-                //Assert that description mapping worked as expected
-                assert.equal(results[0].desc, 'A test response');
-                assert.equal(results[1].desc, 'Another response');
-                assert.equal(results[2].desc, '');
-                done(err);
-            });
-        });
-
-        it('should properly map a simple field value for json', function(done) {
-            var payload = require('../stubs/json-response').single;
-
-            model.http.read.mapping = {
-                'value': 'id'
-            };
-
-            action.format = 'json';
-
-            helper.mapFields(payload, model, action, function(err, results) {
-                assert.equal(results[0].value, '16SDNIFOD12DISJ012AN812A');
-                done();
-            });
-        });
-
-        it('should properly map a simple field value for xml', function(done) {
-            var payload = require('../stubs/xml-response').collection;
-
-            model.http.read.mapping = {
-                'value': 'id'
-            };
-
-            model.http.read.pathSelector = '/v1models/v1model';
-
-            action.format = 'xml';
-
-            helper.mapFields(payload, model, action, function(err, results) {
-                assert.equal(results[0].value, 'ABC123');
-                done();
-            });
-        });
-
-        it('should properly determine a mapping is an xpath value', function(done) {
-            var payload = require('../stubs/xml-response').single;
-
-            model.http.read.mapping = {
-                'value': '/v1model/id'
-            };
-
-            model.http.read.pathSelector = '/v1model';
-
-            action.format = 'xml';
-
-            helper.mapFields(payload, model, action, function(err, results) {
-                // result.value should contain the <id> tags since our xpath selector
-                // doesn't include text(). the text() path will only be appended if
-                // the mapper doesn't think it's an Xpath selector.
-                assert.equal(results[0].value, '<id>ABC123</id>');
-                done(err);
+                    helper.mapRequest(testObj, model, action, function(err, res) {
+                        var expectedXml = '<v1model><some_value>something</some_value></v1model>';
+                        assert.equal(expectedXml, res);
+                        done(err);
+                    });
+                });
             });
         });
     });
@@ -304,11 +387,13 @@ describe('Http-helper', function() {
 
         it('should correctly interpolate configured URL parameters', function() {
             action.urlParameters = {
-                user: '{{id}}'
+                user: '{{query.id}}'
             };
 
             var context = {
-                id: '1'
+                query: {
+                    id: '1'
+                }
             };
 
             assert.equal(helper.constructUri(connection, action, {}, context), 'http://localhost:1337/api/V1/model?user=1');
@@ -442,21 +527,41 @@ describe('Http-helper', function() {
             assert.isDefined(helper.constructBody);
         });
 
-        it('should return a stringified JSON object', function() {
+        it('should return a stringified JSON object', function(done) {
             var values = {
-                id: 123
+                id: 123,
+                desc: 'abc',
+                value: 55
             };
 
-            var body = helper.constructBody(action, values, {});
-
-            assert(_.isString(body), 'Expected body to be a string');
-
+            helper.constructBody(action, values, model, {}, function(err, res) {
+                if(err) return done(err);
+                assert(_.isString(res), 'Expected body to be a string');
+                done(err);
+            });
         });
 
-        it('should return undefined if nothing can be used as a body', function() {
-            var body = helper.constructBody(action, {}, {});
+        it('should return a singular object if the value is a single object', function(done) {
+            var values = {
+                id: 123,
+                desc: 'abc',
+                value: 55
+            };
 
-            assert(_.isEmpty(body), 'Expected body to be empty.');
+            helper.constructBody(action, values, model, {}, function(err, res) {
+                if(err) return done(err);
+                var parsedResults = JSON.parse(res);
+                assert(!_.isArray(parsedResults), 'Should not be a collection');
+                done();
+            });
+        });
+
+        it('should return undefined if nothing can be used as a body', function(done) {
+            helper.constructBody(action, {}, model, {}, function(err, res) {
+                if(err) return done(err);
+                assert(_.isEmpty(res), 'Expected body to be empty.');
+                done();
+            });
         });
     });
 
