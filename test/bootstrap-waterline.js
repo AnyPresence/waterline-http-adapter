@@ -1,7 +1,15 @@
 var Waterline = require('waterline'),
     adapter = require('../'),
-    _ = require('lodash'),
-    path = require('path');
+    _ = require('lodash');
+
+//Stub the global sails object, for logging
+sails = {
+    log: {
+        debug: function(msg) {
+            return;
+        }
+    }
+};
 
 module.exports = function(connections, collections, cb) {
     var waterline = new Waterline();
