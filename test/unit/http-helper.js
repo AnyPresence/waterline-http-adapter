@@ -608,5 +608,35 @@ describe('Http-helper', function() {
                 done(err);
             });
         });
+
+        it('should handle an empty body with a selector', function(done) {
+            nock('http://localhost:1337')
+                .get('/api/V1/model')
+                .reply(200);
+
+            model.http.read.pathSelector = '$';
+
+            helper.makeRequest(connection, model, action, {}, {}, {}, function(err, response, result) {
+                if (err) return done(err);
+                assert(!response.body);
+                assert(result.length === 0, 'Result should be empty array');
+                done();
+            });
+        });
+
+        it('should ignore a response body if no selector is supplied', function(done) {
+            nock('http://localhost:1337')
+                .get('/api/V1/model')
+                .reply(200, {test: '123'});
+
+            model.http.read.pathSelector = '';
+
+            helper.makeRequest(connection, model, action, {}, {}, {}, function(err, response, result) {
+                if (err) return done(err);
+                assert(response.body);
+                assert(result.length === 0, 'Result should be an empty array');
+                done();
+            });
+        });
     });
 });
