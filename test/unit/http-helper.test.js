@@ -597,6 +597,18 @@ describe('Http-helper', function() {
 
             assert.equal(headers['Session'], '123');
         });
+
+        it('should not clobber a configured Accept header', function() {
+            action.headers = {
+                'Accept': 'vnd.visa.CardFeatures.v1+json'
+            };
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
+
+            assert(headers['Accept'] === action.headers['Accept'], 'Unexpected Accept header: ' + headers['Accept']);
+        });
     });
 
     describe('constructBody function', function() {
