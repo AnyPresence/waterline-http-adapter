@@ -1,11 +1,11 @@
-var helper = require('../../lib/http-helper'),
+var Helper = require('../../lib/http-helper'),
     assert = require('chai').assert,
     nock = require('nock'),
     _ = require('lodash'),
     testConnection = require('../stubs/connections').test, 
     v1model = require('../stubs/V1Model');
 
-var connection, model, action;
+var connection, model, action, helper;
 
 describe('Http-helper', function() {
     beforeEach(function() {
@@ -16,6 +16,7 @@ describe('Http-helper', function() {
 
     describe('interpolate function', function() {
         it('should exist', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.interpolate);
         });
 
@@ -25,7 +26,9 @@ describe('Http-helper', function() {
                 value: 123
             };
 
-            var result = helper.interpolate(source, context);
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            var result = helper.interpolate(source);
 
             assert.equal(result, 'Value is: 123');
         });
@@ -34,7 +37,9 @@ describe('Http-helper', function() {
             var source = 'No interpolation found';
             var context = {};
 
-            var result = helper.interpolate(source, context);
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            var result = helper.interpolate(source);
 
             assert.equal(result, 'No interpolation found');
         });
@@ -43,7 +48,9 @@ describe('Http-helper', function() {
             var source;
             var context = {};
 
-            var result = helper.interpolate(source, context);
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            var result = helper.interpolate(source);
             
             assert.equal(result, '');
         });
@@ -52,6 +59,7 @@ describe('Http-helper', function() {
     describe('field mapping', function() {
         describe('mapResponse function', function() {
             it('should exist', function() {
+                var helper = new Helper(connection, model, action, {}, {}, {});
                 assert.isDefined(helper.mapResponse);
             });
 
@@ -68,7 +76,9 @@ describe('Http-helper', function() {
 
                     model.http.read.pathSelector = '$.*';
 
-                    helper.mapResponse(payload, model, action, function(err, result) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, result) {
                         assert.equal(result[0].desc, 'test');
                         assert.equal(result[0].value, 1234);
                         assert.equal(result[0].id, '16SDNIFOD12DISJ012AN812A');
@@ -90,7 +100,9 @@ describe('Http-helper', function() {
 
                     model.http.read.pathSelector = '$.*';
 
-                    helper.mapResponse(payload, model, action, function(err, result) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, result) {
                         assert.isArray(result[0].collection);
                         done(err);
                     });
@@ -106,7 +118,9 @@ describe('Http-helper', function() {
 
                     model.http.read.pathSelector = '$.v1models.*';
 
-                    helper.mapResponse(payload, model, action, function(err, result) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, result) {
                         assert.isArray(result);
                         assert(result.length > 1, 'Expected more than 1 result in the collection');
                         assert.equal(result[0].desc, 'test1');
@@ -123,7 +137,9 @@ describe('Http-helper', function() {
 
                     model.http.read.pathSelector = '$.*';
 
-                    helper.mapResponse(payload, model, action, function(err, result) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, result) {
                         assert.equal(result[0].id, payload.v1model.id);
                         done(err);
                     });
@@ -138,7 +154,9 @@ describe('Http-helper', function() {
 
                     action.format = 'json';
 
-                    helper.mapResponse(payload, model, action, function(err, results) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, results) {
                         assert.equal(results[0].value, '16SDNIFOD12DISJ012AN812A');
                         done();
                     });
@@ -159,7 +177,9 @@ describe('Http-helper', function() {
 
                     action.format = 'xml';
 
-                    helper.mapResponse(payload, model, action, function(err, result) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, result) {
                         assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A description"');
                         done(err);
                     });
@@ -174,7 +194,9 @@ describe('Http-helper', function() {
 
                     action.format = 'xml';
 
-                    helper.mapResponse(payload, model, action, function(err, result) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, result) {
                         assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
                         done(err);
                     });            
@@ -187,7 +209,9 @@ describe('Http-helper', function() {
 
                     action.format = 'xml';
 
-                    helper.mapResponse(payload, model, action, function(err, results) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, results) {
                         assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
                         assert.equal(results[0].id, 'ABC123');
                         assert.equal(results[1].id, 'DEF456');
@@ -207,7 +231,9 @@ describe('Http-helper', function() {
 
                     action.format = 'xml';
 
-                    helper.mapResponse(payload, model, action, function(err, results) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, results) {
                         assert(results.length === 3, 'Expected 3 results to be found. Only found ' + results.length + '.');
                         //Assert that description mapping worked as expected
                         assert.equal(results[0].desc, 'A test response');
@@ -228,7 +254,9 @@ describe('Http-helper', function() {
 
                     action.format = 'xml';
 
-                    helper.mapResponse(payload, model, action, function(err, results) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, results) {
                         assert.equal(results[0].value, 'ABC123');
                         done();
                     });
@@ -245,7 +273,9 @@ describe('Http-helper', function() {
 
                     action.format = 'xml';
 
-                    helper.mapResponse(payload, model, action, function(err, results) {
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, results) {
                         // result.value should contain the <id> tags since our xpath selector
                         // doesn't include text(). the text() path will only be appended if
                         // the mapper doesn't think it's an Xpath selector.
@@ -258,6 +288,7 @@ describe('Http-helper', function() {
 
         describe('mapRequest function', function() {
             it('should exist', function() {
+                var helper = new Helper(connection, model, action, {}, {}, {});
                 assert.isDefined(helper.mapRequest);
             });
 
@@ -278,7 +309,9 @@ describe('Http-helper', function() {
                         value: 'the_value'
                     };
 
-                    helper.mapRequest(testObj, model, action, function(err, res) {
+                    var helper = new Helper(connection, model, action, {}, testObj, {});
+
+                    helper.mapRequest(function(err, res) {
                         if(err) return done(err);
                         assert.equal(res.a_field, 123);
                         assert.equal(res.the_value, 55);
@@ -289,7 +322,9 @@ describe('Http-helper', function() {
                 it('should return a properly mapped object without mapping', function(done) {
                     model.http.read.mapping.request = {};
 
-                    helper.mapRequest(testObj, model, action, function(err, res) {
+                    var helper = new Helper(connection, model, action, {}, testObj, {});
+
+                    helper.mapRequest(function(err, res) {
                         if(err) return done(err);
                         assert.equal(res.id, 123);
                         done();
@@ -308,7 +343,9 @@ describe('Http-helper', function() {
                 });
 
                 it('should return a properly formatted payload with no mapping', function(done) {
-                    helper.mapRequest(testObj, model, action, function(err, res) {
+                    var helper = new Helper(connection, model, action, {}, testObj, {});
+
+                    helper.mapRequest(function(err, res) {
                         var expectedXml = '<v1model><value>something</value></v1model>';
                         assert.equal(expectedXml, res);
                         done(err);
@@ -320,7 +357,9 @@ describe('Http-helper', function() {
                         'value': 'some_value'
                     };
 
-                    helper.mapRequest(testObj, model, action, function(err, res) {
+                    var helper = new Helper(connection, model, action, {}, testObj, {});
+
+                    helper.mapRequest(function(err, res) {
                         var expectedXml = '<v1model><some_value>something</some_value></v1model>';
                         assert.equal(expectedXml, res);
                         done(err);
@@ -332,11 +371,13 @@ describe('Http-helper', function() {
 
     describe('constructUri function', function() {
         it('should exist', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.constructUri);
         });
 
         it('should construct a simple Uri', function() {
-            assert.equal(helper.constructUri(connection, action), 'http://localhost:1337/api/V1/model');
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model');
         });
 
         it('should construct a Uri with query parameters in the connection config', function() {
@@ -344,7 +385,9 @@ describe('Http-helper', function() {
                 'foo': 'bar'
             };
 
-            assert.equal(helper.constructUri(connection, action), 'http://localhost:1337/api/V1/model?foo=bar');
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?foo=bar');
         });
 
         it('should construct a Uri with query parameters in the action configuration', function() {
@@ -352,7 +395,9 @@ describe('Http-helper', function() {
                 'bar': 'baz'
             };
 
-            assert.equal(helper.constructUri(connection, action), 'http://localhost:1337/api/V1/model?bar=baz');
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?bar=baz');
         });
 
         it('should use route configuration params over connection configuration params', function() {
@@ -364,15 +409,19 @@ describe('Http-helper', function() {
                 'foo': 'baz'
             };
 
-            assert.equal(helper.constructUri(connection, action), 'http://localhost:1337/api/V1/model?foo=baz');
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?foo=baz');
         });
 
         it('should encode the parameters of a GET into the url', function() {
-            var options = {
+            var urlParameters = {
                 'fizz': 'bang'
             };
 
-            assert.equal(helper.constructUri(connection, action, options), 'http://localhost:1337/api/V1/model?fizz=bang');
+            var helper = new Helper(connection, model, action, urlParameters, {}, {});
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?fizz=bang');
         });
 
         it('should correctly interpolate the URL', function() {
@@ -382,7 +431,9 @@ describe('Http-helper', function() {
                 id: 'abc123'
             };
 
-            assert.equal(helper.constructUri(connection, action, {}, context), 'http://localhost:1337/api/v1/model/abc123');
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/v1/model/abc123');
         });
 
         it('should correctly interpolate configured URL parameters', function() {
@@ -396,7 +447,9 @@ describe('Http-helper', function() {
                 }
             };
 
-            assert.equal(helper.constructUri(connection, action, {}, context), 'http://localhost:1337/api/V1/model?user=1');
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?user=1');
         });
 
         it('should correctly create a URL that has a portion of the path in the base URL', function() {
@@ -404,7 +457,9 @@ describe('Http-helper', function() {
 
             action.path = '/model';
 
-            assert.equal(helper.constructUri(connection, action, {}, {}), 'http://localhost:1337/api/v1/model');
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/v1/model');
         });
     });
 
@@ -416,6 +471,7 @@ describe('Http-helper', function() {
         });
 
         it('should exist', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.constructHeaders);
         });
 
@@ -424,16 +480,16 @@ describe('Http-helper', function() {
                 'token': 'abc123'
             };
 
-            var headers = helper.constructHeaders(connection, {});
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
 
             assert.equal(headers.token, 'abc123' );
         });
 
         it('should properly override adapter headers with route headers', function() {
-            var options = {
-                headers: {
-                    'token': 'abc123'
-                }
+            action.headers = {
+                'token': 'abc123'
             };
 
             // This header should not appear in the returned header object
@@ -441,27 +497,35 @@ describe('Http-helper', function() {
                 'token': 'wrong_token'
             };
 
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
             var headers = helper.constructHeaders(connection, options);
 
             assert.equal(headers.token, 'abc123');
         });
 
         it('should set the content-type header to json if configured', function() {
-            var headers = helper.constructHeaders(connection, options);
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
 
             assert.equal(headers['Content-Type'], 'application/json');
         });
 
         it('should set the content-type header to xml if configured', function() {
-            options.format = 'xml';
+            action.format = 'xml';
 
-            var headers = helper.constructHeaders(connection, options);
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
 
             assert.equal(headers['Content-Type'], 'application/xml');
         });
 
         it('should set the accept header to json if configured', function() {
-            options.format = 'json';
+            action.format = 'json';
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
 
             var headers = helper.constructHeaders(connection, options);
 
@@ -469,7 +533,9 @@ describe('Http-helper', function() {
         });
 
         it('should use the adapter configuration if the route is set to form-encoded', function() {
-            options.format = 'form-encoded';
+            action.format = 'form-encoded';
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
 
             var headers = helper.constructHeaders(connection, options);
 
@@ -478,15 +544,20 @@ describe('Http-helper', function() {
 
         it('should use the route configuration over the adapter configuration', function() {
             connection.format = 'xml';
-            options.format = 'json';
+            action.format = 'json';
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
 
             var headers = helper.constructHeaders(connection, options);
 
+            // Action format json should override the connection format xml
             assert.equal(headers['Accept'], 'application/json');
         });
 
         it('should create an Authorization basic header if supplied username and password', function() {
-            var headers = helper.constructHeaders(connection, options);
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
 
             assert.equal(headers['Authorization'], 'Basic dXNlcjpwYXNzd29yZA==');
         });
@@ -494,7 +565,9 @@ describe('Http-helper', function() {
         it('should not create an Authorization basic header if supplied empty username', function() {
             connection.username = '';
 
-            var headers = helper.constructHeaders(connection, options);
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
 
             assert.isUndefined(headers['Authorization']);
         });
@@ -502,7 +575,9 @@ describe('Http-helper', function() {
         it('should not create an Authorization basic header if supplied empty password', function() {
             connection.passwordPlainText = '';
 
-            var headers = helper.constructHeaders(connection, options);
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders();
 
             assert.isUndefined(headers['Authorization']);
         });
@@ -516,7 +591,9 @@ describe('Http-helper', function() {
                 id: '123'
             };
 
-            var headers = helper.constructHeaders(connection, options, context);
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            var headers = helper.constructHeaders();
 
             assert.equal(headers['Session'], '123');
         });
@@ -524,7 +601,81 @@ describe('Http-helper', function() {
 
     describe('constructBody function', function() {
         it('should exist', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.constructBody);
+        });
+
+        it('should append the id to the body if missing on a post for JSON', function(done) {
+            var values = {
+                desc: 'abc',
+                value: 100
+            };
+
+            var context = {
+                params: {
+                    id: 101
+                }
+            };
+
+            action = {
+                verb: 'POST',
+                path: '/api/V1/model/101',
+                format: 'json',
+                headers: {},
+                urlParameters: {},
+                objectNameMapping: 'v1model',
+                pathSelector: '$.*',
+                bodyPayloadTemplate: '',
+                mapping: {
+                    response: {},
+                    request: {}
+                }
+            };
+
+            var helper = new Helper(connection, model, action, {}, values, context);
+
+            helper.constructBody(function(err, res) {
+                if (err) return done(err);
+                res = JSON.parse(res);
+                assert(res.id, 'Expected "id" on the outgoing payload');
+                done();
+            });
+        });
+
+        it('should append the id to the body if missing on a post for XML', function(done) {
+           var values = {
+                desc: 'abc',
+                value: 100
+            };
+
+            var context = {
+                params: {
+                    id: 101
+                }
+            };
+
+            action = {
+                verb: 'POST',
+                path: '/api/V1/model/101',
+                format: 'xml',
+                headers: {},
+                urlParameters: {},
+                objectNameMapping: 'v1model',
+                pathSelector: '$.*',
+                bodyPayloadTemplate: '',
+                mapping: {
+                    response: {},
+                    request: {}
+                }
+            };
+
+            var helper = new Helper(connection, model, action, {}, values, context);
+
+            helper.constructBody(function(err, res) {
+                if (err) return done(err);
+                assert(res.indexOf('<id>') !== -1, 'Expected "id" on the outgoing payload');
+                done();
+            });
         });
 
         it('should return a stringified JSON object', function(done) {
@@ -534,7 +685,9 @@ describe('Http-helper', function() {
                 value: 55
             };
 
-            helper.constructBody(action, values, model, {}, function(err, res) {
+            var helper = new Helper(connection, model, action, {}, values, {});
+
+            helper.constructBody(function(err, res) {
                 if(err) return done(err);
                 assert(_.isString(res), 'Expected body to be a string');
                 done(err);
@@ -548,7 +701,9 @@ describe('Http-helper', function() {
                 value: 55
             };
 
-            helper.constructBody(action, values, model, {}, function(err, res) {
+            var helper = new Helper(connection, model, action, {}, values, {});
+
+            helper.constructBody(function(err, res) {
                 if(err) return done(err);
                 var parsedResults = JSON.parse(res);
                 assert(!_.isArray(parsedResults), 'Should not be a collection');
@@ -557,7 +712,9 @@ describe('Http-helper', function() {
         });
 
         it('should return undefined if nothing can be used as a body', function(done) {
-            helper.constructBody(action, {}, model, {}, function(err, res) {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            helper.constructBody(function(err, res) {
                 if(err) return done(err);
                 assert(_.isEmpty(res), 'Expected body to be empty.');
                 done();
@@ -567,6 +724,7 @@ describe('Http-helper', function() {
 
     describe('makeRequest function', function() {
         it('should exist', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.makeRequest);
         });
 
@@ -575,7 +733,9 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200);
 
-            helper.makeRequest(connection, model, action, {}, {}, {}, function(err) {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            helper.makeRequest(function(err) {
                 done(err);
             });
         });
@@ -590,7 +750,9 @@ describe('Http-helper', function() {
                 'token': 'abc123'
             };
 
-            helper.makeRequest(connection, model, action, {}, {}, {}, function(err) {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            helper.makeRequest(function(err) {
                 done(err);
             });
         });
@@ -604,7 +766,9 @@ describe('Http-helper', function() {
                 'foo': 'bar'
             };
 
-            helper.makeRequest(connection, model, action, {}, {}, {}, function(err) {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            helper.makeRequest(function(err) {
                 done(err);
             });
         });
@@ -616,9 +780,12 @@ describe('Http-helper', function() {
 
             model.http.read.pathSelector = '$';
 
-            helper.makeRequest(connection, model, action, {}, {}, {}, function(err, response, result) {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            helper.makeRequest(function(err, response, result) {
                 if (err) return done(err);
-                assert(!response.body);
+                console.log(response.body);
+                assert(!response.body, 'Body should be empty');
                 assert(result.length === 0, 'Result should be empty array');
                 done();
             });
@@ -631,7 +798,9 @@ describe('Http-helper', function() {
 
             model.http.read.pathSelector = '';
 
-            helper.makeRequest(connection, model, action, {}, {}, {}, function(err, response, result) {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            helper.makeRequest(function(err, response, result) {
                 if (err) return done(err);
                 assert(response.body);
                 assert(result.length === 0, 'Result should be an empty array');
