@@ -2,6 +2,7 @@
     "single": {
         "v1model": {
             "id": "16SDNIFOD12DISJ012AN812A",
+            "long_field_name": "test",
             "outer": {
                 "inner": {
                     "value": "test"
@@ -23,6 +24,7 @@
         [
             {
                 "id": "16SDNIFOD12KGHJ012AN455C",
+                "long_field_name": "test1",
                 "outer": {
                     "inner": {
                         "value": "test1"
@@ -32,6 +34,7 @@
             },
             {
                 "id": "A5SDNIFOD12DISJ0BB6N8312",
+                "long_field_name": "test2",
                 "outer": {
                     "inner": {
                         "value": "test2"

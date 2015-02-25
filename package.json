@@ -14,15 +14,15 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "JSONPath": "^0.10.0",
+    "JSONPath": "0.10.0",
     "URIjs": "1.14.1",
-    "handlebars": "^2.0.0",
-    "inflection": "^1.5.3",
-    "jsonpath-object-transform": "^1.0.3",
+    "handlebars": "2.0.0",
+    "inflection": "1.5.3",
+    "jsonpath-object-transform": "1.0.3",
     "lodash": "2.4.1",
-    "request": "^2.48.0",
-    "xmldom": "^0.1.19",
-    "xpath.js": "^1.0.5"
+    "request": "2.48.0",
+    "xmldom": "0.1.19",
+    "xpath.js": "1.0.5"
   },
   "devDependencies": {
     "captains-log": "~0.11.0",
