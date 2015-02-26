@@ -12,6 +12,9 @@ module.exports = {
         value: {
             type: 'integer'
         },
+        longFieldName: {
+            type: 'string'
+        },
         ping: function() {
             return 'pong';
         }
@@ -25,8 +28,11 @@ module.exports = {
             urlParameters: {},
             objectNameMapping: 'v1model',
             pathSelector: '$.*',
-            mapping: {},
-            bodyPayloadTemplate: ''
+            bodyPayloadTemplate: '',
+            mapping: {
+                response: {},
+                request: {}
+            }
         }
     }
 };
