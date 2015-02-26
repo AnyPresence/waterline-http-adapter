@@ -1,11 +1,13 @@
 var Waterline = require('waterline'),
     adapter = require('../'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    util = require('util');
 
 //Stub the global sails object, for logging
 sails = {
     log: {
         debug: function(msg) {
+            // console.log('debug: ' + msg);
             return;
         }
     }

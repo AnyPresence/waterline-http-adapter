@@ -97,15 +97,33 @@ describe('Adapter', function() {
         });
 
         describe('request function', function() {
-            it('should return an error if no options are found for supplied action', function() {
+            it('should return an error if no options are found for supplied action', function(done) {
                 adapter.request('test', 'v1model', 'notfound', {}, {}, {}, function(err) {
                     assert.isDefined(err);
+                    done();
                 });
             });
 
-            it('should return a formatted error', function(done) {
-                adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err, res) {
-                    assert.isObject(err.error);
+            it('should return an error on a non-2xx response', function(done) {
+                nock('http://localhost:1337')
+                    .get('/api/V1/model')
+                    .reply(400);
+
+                adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err) {
+                    assert.isDefined(err);
+                    assert.equal(err.error.message, 'Remote host returned 400');
+                    done();
+                });
+            });
+
+            it('should return an error on a 500 response', function(done) {
+                nock('http://localhost:1337')
+                    .get('/api/V1/model')
+                    .reply(500);
+
+                adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err) {
+                    assert.isDefined(err);
+                    assert.equal(err.error.message, 'Remote host returned 500');
                     done();
                 });
             });
