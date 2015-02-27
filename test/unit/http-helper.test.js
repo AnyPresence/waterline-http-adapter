@@ -461,6 +461,52 @@ describe('Http-helper', function() {
 
             assert.equal(helper.constructUri(), 'http://localhost:1337/api/v1/model');
         });
+
+        it('should correctly map and include any scope query params', function(done) {
+            var context = {
+                query: {
+                    scope: 'all',
+                    query: {
+                        'longFieldName': 'abc555'
+                    }
+                }
+            };
+
+            var urlParams = {
+                'limit': 50,
+                'offset': 250
+            };
+
+            action.mapping.request = {
+                'longFieldName': 'long_field_name'
+            };
+
+            var helper = new Helper(connection, model, action, urlParams, {}, context);
+            var uri = helper.constructUri();
+            assert(uri.indexOf('long_field_name=abc555') !== -1);
+            done();
+        });
+
+        it('should include scope query params even if there is no mapping for that key', function(done) {
+            var context = {
+                query: {
+                    scope: 'all',
+                    query: {
+                        'longFieldName': 'abc555'
+                    }
+                }
+            };
+
+            var urlParams = {
+                'limit': 50,
+                'offset': 250
+            };
+
+            var helper = new Helper(connection, model, action, urlParams, {}, context);
+            var uri = helper.constructUri();
+            assert(uri.indexOf('longFieldName=abc555') !== -1);
+            done();
+        });
     });
 
     describe('constructHeaders function', function() {
