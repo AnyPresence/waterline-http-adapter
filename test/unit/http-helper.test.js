@@ -319,14 +319,19 @@ describe('Http-helper', function() {
                     });
                 });
 
-                it('should return a properly mapped object without mapping', function(done) {
-                    model.http.read.mapping.request = {};
+                it('should not map fields that do not have an appropriate mapping', function(done){
+                    // No mapping provided for 'name' field. The name field should not
+                    // appear in the mapped result.
+                    model.http.read.mapping.request = {
+                        id: 'id',
+                        value: 'val'
+                    };
 
                     var helper = new Helper(connection, model, action, {}, testObj, {});
 
                     helper.mapRequest(function(err, res) {
-                        if(err) return done(err);
-                        assert.equal(res.id, 123);
+                        if (err) return done(err);
+                        assert.isUndefined(res.name);
                         done();
                     });
                 });
@@ -338,31 +343,39 @@ describe('Http-helper', function() {
                 beforeEach(function() {
                     action.format = 'xml';
                     testObj = {
-                        value: 'something'
+                        value: 'something',
+                        desc: 'a description'
                     };
                 });
 
-                it('should return a properly formatted payload with no mapping', function(done) {
+                it('should not map fields that do not have an appropriate mapping', function(done) {
+                    action.mapping.request = {
+                        'value': 'val'
+                    };
+
                     var helper = new Helper(connection, model, action, {}, testObj, {});
 
                     helper.mapRequest(function(err, res) {
-                        var expectedXml = '<v1model><value>something</value></v1model>';
+                        if (err) return done(err);
+                        var expectedXml = '<v1model><val>something</val></v1model>';
                         assert.equal(expectedXml, res);
-                        done(err);
+                        done();
                     });
                 });
 
                 it('should return a properly mapped payload with mapping', function(done) {
                     action.mapping.request = {
-                        'value': 'some_value'
+                        'value': 'some_value',
+                        'desc': 'desc'
                     };
 
                     var helper = new Helper(connection, model, action, {}, testObj, {});
 
                     helper.mapRequest(function(err, res) {
-                        var expectedXml = '<v1model><some_value>something</some_value></v1model>';
+                        if (err) return done(err);
+                        var expectedXml = '<v1model><some_value>something</some_value><desc>a description</desc></v1model>';
                         assert.equal(expectedXml, res);
-                        done(err);
+                        done();
                     });
                 });
             });
@@ -487,7 +500,7 @@ describe('Http-helper', function() {
             done();
         });
 
-        it('should include scope query params even if there is no mapping for that key', function(done) {
+        it('should not include scope query params if there is no mapping for that key', function(done) {
             var context = {
                 query: {
                     scope: 'all',
@@ -504,7 +517,7 @@ describe('Http-helper', function() {
 
             var helper = new Helper(connection, model, action, urlParams, {}, context);
             var uri = helper.constructUri();
-            assert(uri.indexOf('longFieldName=abc555') !== -1);
+            assert(uri.indexOf('longFieldName=abc555') === -1, 'URI should not include longFieldName');
             done();
         });
     });
