@@ -11,6 +11,11 @@
             }
         }
     },
+    "singleNoRoot": {
+        "id": "16SDNIFOD12DISJ012AN812A",
+        "desc": "A model",
+        "value": "123ABC"
+    },
     "singleArray": {
         "v1model": {
             "id": "16SDNIFOD12KGCCS012AC11MF",

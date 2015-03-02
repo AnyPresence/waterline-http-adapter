@@ -129,7 +129,6 @@ describe('Http-helper', function() {
                     });            
                 });
 
-
                 it('should attempt to find a key on the payload if no mapping is present', function(done) {
                     var payload = require('../stubs/json-response').single;
 
@@ -158,6 +157,21 @@ describe('Http-helper', function() {
 
                     helper.mapResponse(payload, function(err, results) {
                         assert.equal(results[0].value, '16SDNIFOD12DISJ012AN812A');
+                        done();
+                    });
+                });
+
+                it('should properly return a payload when using the $ selector', function(done) {
+                    var payload = require('../stubs/json-response').singleNoRoot;
+
+                    action.format = 'json';
+
+                    model.http.read.pathSelector = '$';
+
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+
+                    helper.mapResponse(payload, function(err, results) {
+                        assert.equal(results[0].id, '16SDNIFOD12DISJ012AN812A');
                         done();
                     });
                 });
