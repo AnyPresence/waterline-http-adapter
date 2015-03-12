@@ -112,6 +112,7 @@ describe('Adapter', function() {
                 adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err) {
                     assert.isDefined(err);
                     assert.equal(err.error.message, 'Remote host returned 400');
+                    assert.equal(err.statusCode, 400);
                     done();
                 });
             });
@@ -124,6 +125,7 @@ describe('Adapter', function() {
                 adapter.request('test', 'v1model', 'read', {}, {}, {}, function(err) {
                     assert.isDefined(err);
                     assert.equal(err.error.message, 'Remote host returned 500');
+                    assert.equal(err.statusCode, 500);
                     done();
                 });
             });
