@@ -2,7 +2,7 @@ var Helper = require('../../lib/http-helper'),
     assert = require('chai').assert,
     nock = require('nock'),
     _ = require('lodash'),
-    testConnection = require('../stubs/connections').test, 
+    testConnection = require('../stubs/connections').test,
     v1model = require('../stubs/V1Model'),
   DOMParser = require('xmldom').DOMParser;
 
@@ -52,7 +52,7 @@ describe('Http-helper', function() {
             var helper = new Helper(connection, model, action, {}, {}, context);
 
             var result = helper.interpolate(source);
-            
+
             assert.equal(result, '');
         });
     });
@@ -127,21 +127,6 @@ describe('Http-helper', function() {
                         assert.equal(result[0].desc, 'test1');
                         assert.equal(result[1].desc, 'test2');
                         done(err);
-                    });            
-                });
-
-                it('should attempt to find a key on the payload if no mapping is present', function(done) {
-                    var payload = require('../stubs/json-response').single;
-
-                    model.http.read.mapping.response = {};
-
-                    model.http.read.pathSelector = '$.*';
-
-                    var helper = new Helper(connection, model, action, {}, {}, {});
-
-                    helper.mapResponse(payload, function(err, result) {
-                        assert.equal(result[0].id, payload.v1model.id);
-                        done(err);
                     });
                 });
 
@@ -162,8 +147,31 @@ describe('Http-helper', function() {
                     });
                 });
 
+                it('should not include fields not present in the response mapping', function(done) {
+                    var payload = require('../stubs/json-response').single;
+
+                    model.http.read.mapping.response = {
+                        'the_id': 'id'
+                    };
+
+                    action.format = 'json';
+
+                    var helper = new Helper(connection, model, action, {}, {}, {});
+                    // debugger;
+                    helper.mapResponse(payload, function(err, results) {
+                        if (err) return done(err);
+                        console.log(results);
+                        assert(!('longFieldName' in results), 'Results contain an unmapped key, the key should not be returned on this object');
+                        done();
+                    });
+                });
+
                 it('should properly return a payload when using the $ selector', function(done) {
                     var payload = require('../stubs/json-response').singleNoRoot;
+
+                    model.http.read.mapping.response = {
+                        'id': 'id'
+                    };
 
                     action.format = 'json';
 
@@ -200,25 +208,12 @@ describe('Http-helper', function() {
                     });
                 });
 
-                it('should attempt to find a key on the payload if no mapping is present', function(done) {
-                    var payload = new DOMParser().parseFromString(require('../stubs/xml-response').single);
-
-                    model.http.read.mapping.response = {};
-
-                    model.http.read.pathSelector = '/v1model';
-
-                    action.format = 'xml';
-
-                    var helper = new Helper(connection, model, action, {}, {}, {});
-
-                    helper.mapResponse(payload, function(err, result) {
-                        assert(result[0].desc === 'A test response', 'Expected ' + result + ' to equal "A test response"');
-                        done(err);
-                    });            
-                });
-
                 it('should return a collection of correctly mapped objects', function(done) {
                     var payload = new DOMParser().parseFromString(require('../stubs/xml-response').collection);
+
+                    model.http.read.mapping.response = {
+                        id: 'id/text()'
+                    };
 
                     model.http.read.pathSelector = '/v1models/v1model';
 
@@ -232,7 +227,7 @@ describe('Http-helper', function() {
                         assert.equal(results[1].id, 'DEF456');
                         assert.equal(results[2].id, 'GHI789');
                         done(err);
-                    }); 
+                    });
                 });
 
                 it('should return a collection of correctly mapped object with configured xpath mapping', function(done) {
@@ -893,12 +888,12 @@ describe('Http-helper', function() {
                 done();
             });
         });
-        
+
         it('should respond with an error if the status code is not 2xx', function(done) {
             nock('http://localhost:1337')
                 .get('/api/V1/model')
                 .reply(400, '{"error": "Bad request"}');
-                
+
             var helper = new Helper(connection, model, action, {}, {}, {});
 
             helper.makeRequest(function(err, response, result) {
@@ -908,20 +903,20 @@ describe('Http-helper', function() {
                 done();
             });
         });
-        
+
         it('should return an empty result if the response body is empty', function(done) {
             nock('http://localhost:1337')
                 .get('/api/V1/model')
                 .reply(200, "");
-            
+
             var helper = new Helper(connection, model, action, {}, {}, {});
-            
+
             helper.makeRequest(function(err, response, result) {
                 assert.lengthOf(result, 0);
                 done();
             });
         });
-        
+
         describe('for JSON errors', function() {
             it ('should respond with a parsedResponseBody if the responseBody was successfully parsed', function(done) {
                 nock('http://localhost:1337')
@@ -934,9 +929,9 @@ describe('Http-helper', function() {
                     assert.deepEqual(err.parsedResponseBody, {error: 'Bad request'});
                     done();
                 });
-                
+
             });
-          
+
             it('should respond with a null parsedResponseBody if the responseBody was not valid', function(done) {
                 nock('http://localhost:1337')
                     .get('/api/V1/model')
@@ -950,13 +945,13 @@ describe('Http-helper', function() {
                 });
             });
         });
-        
+
         describe('for XML errors', function() {
             it ('should respond with a parsedResponseBody if the responseBody was successfully parsed', function(done) {
                 nock('http://localhost:1337')
                     .get('/api/V1/model')
                     .reply(400, "<error>bad request</error>");
-              
+
                 action.format = 'xml';
                 var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -964,9 +959,9 @@ describe('Http-helper', function() {
                     assert.isNotNull(err.parsedResponseBody.documentElement)
                     done();
                 });
-                
+
             });
-          
+
             it('should respond with a null parsedResponseBody if the responseBody was not valid', function(done) {
                 nock('http://localhost:1337')
                     .get('/api/V1/model')
