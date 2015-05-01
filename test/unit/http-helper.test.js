@@ -160,7 +160,6 @@ describe('Http-helper', function() {
                     // debugger;
                     helper.mapResponse(payload, function(err, results) {
                         if (err) return done(err);
-                        console.log(results);
                         assert(!('longFieldName' in results), 'Results contain an unmapped key, the key should not be returned on this object');
                         done();
                     });
@@ -865,7 +864,6 @@ describe('Http-helper', function() {
 
             helper.makeRequest(function(err, response, result) {
                 if (err) return done(err);
-                console.log(response.body);
                 assert(!response.body, 'Body should be empty');
                 assert(result.length === 0, 'Result should be empty array');
                 done();
