@@ -3,16 +3,6 @@ var Waterline = require('waterline'),
     _ = require('lodash'),
     util = require('util');
 
-//Stub the global sails object, for logging
-sails = {
-    log: {
-        debug: function(msg) {
-            // console.log('debug: ' + msg);
-            return;
-        }
-    }
-};
-
 module.exports = function(connections, collections, cb) {
     var waterline = new Waterline();
 
