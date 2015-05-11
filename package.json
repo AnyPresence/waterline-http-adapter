@@ -4,7 +4,7 @@
   "description": "AnyPresence waterline-http adapter for Sails / Waterline",
   "main": "lib/adapter.js",
   "scripts": {
-    "test": "mocha test --recursive"
+    "test": "NODE_ENV=test mocha test --recursive"
   },
   "repository": {
     "type": "git",

@@ -422,6 +422,24 @@ describe('Http-helper', function() {
             assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?bar=baz');
         });
 
+        it('should correctly encode a complex query parameter', function() {
+            action.urlParameters = {
+                '$filter': 'StartDate eq \'{{req.startDate}}\' and EndDate eq \'{{req.endDate}}\''
+            };
+
+            var context = {
+                req: {
+                    startDate: '20150413',
+                    endDate: '20150417'
+                }
+            };
+
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+
+            assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?%24filter=StartDate+eq+%2720150413%27+and+EndDate+eq+%2720150417%27');
+        });
+
         it('should use route configuration params over connection configuration params', function() {
             connection.urlParameters = {
                 'foo': 'bar'
