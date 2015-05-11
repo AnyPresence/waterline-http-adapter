@@ -424,10 +424,17 @@ describe('Http-helper', function() {
 
         it('should correctly encode a complex query parameter', function() {
             action.urlParameters = {
-                '$filter': "StartDate eq '20150413' and EndDate eq '20150417'"
+                '$filter': 'StartDate eq \'{{req.startDate}}\' and EndDate eq \'{{req.endDate}}\''
             };
 
-            var helper = new Helper(connection, model, action, {}, {}, {});
+            var context = {
+                req: {
+                    startDate: '20150413',
+                    endDate: '20150417'
+                }
+            };
+
+            var helper = new Helper(connection, model, action, {}, {}, context);
 
 
             assert.equal(helper.constructUri(), 'http://localhost:1337/api/V1/model?%24filter=StartDate+eq+%2720150413%27+and+EndDate+eq+%2720150417%27');
