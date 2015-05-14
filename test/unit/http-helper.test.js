@@ -4,9 +4,9 @@ var Helper = require('../../lib/http-helper'),
     _ = require('lodash'),
     testConnection = require('../stubs/connections').test,
     v1model = require('../stubs/V1Model'),
-  DOMParser = require('xmldom').DOMParser;
+    DOMParser = require('xmldom').DOMParser;
 
-var connection, model, action, helper;
+var connection, model, action;
 
 describe('Http-helper', function() {
     beforeEach(function() {
@@ -157,7 +157,7 @@ describe('Http-helper', function() {
                     action.format = 'json';
 
                     var helper = new Helper(connection, model, action, {}, {}, {});
-                    // debugger;
+
                     helper.mapResponse(payload, function(err, results) {
                         if (err) return done(err);
                         assert(!('longFieldName' in results), 'Results contain an unmapped key, the key should not be returned on this object');
@@ -299,6 +299,35 @@ describe('Http-helper', function() {
             it('should exist', function() {
                 var helper = new Helper(connection, model, action, {}, {}, {});
                 assert.isDefined(helper.mapRequest);
+            });
+
+            describe('for form-encoded', function() {
+                var testObj;
+
+                beforeEach(function() {
+                    testObj = {
+                        id: 999,
+                        value: 23,
+                        desc: "'test' value"
+                    };
+                });
+
+                it('should return a properly mapped payload', function(done) {
+                    action.format = 'form_encoded';
+                    model.http.read.mapping.request = {
+                        id: 'id',
+                        value: 'a_value',
+                        desc: 'description'
+                    };
+
+                    var helper = new Helper(connection, model, action, {}, testObj, {});
+
+                    helper.mapRequest(function(err, res) {
+                        if (err) return done(err);
+                        assert.equal(res, 'id=999&description=\'test\'+value&a_value=23');
+                        done();
+                    });
+                });
             });
 
             describe('for JSON', function() {
@@ -573,7 +602,7 @@ describe('Http-helper', function() {
             assert.equal(headers.token, 'abc123' );
         });
 
-        it('should properly override adapter headers with route headers', function() {
+        it('should properly override adapter headers with action headers', function() {
             action.headers = {
                 'token': 'abc123'
             };
@@ -606,6 +635,29 @@ describe('Http-helper', function() {
             var headers = helper.constructHeaders();
 
             assert.equal(headers['Content-Type'], 'application/xml');
+        });
+
+        it('should set the content-type header to application/x-www-form-urlencoded if configured', function() {
+            action.format = 'form-encoded';
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders(connection, options);
+
+            assert.equal(headers['Content-Type'], 'application/x-www-form-urlencoded');
+            assert.notEqual(headers['Content-Type'], 'application/json');
+            assert.notEqual(headers['Content-Type'], 'application/xml');
+        });
+
+        it('should set the Accept header to the adapter configuration if the action is form-encoded', function() {
+            action.format = 'form-encoded';
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+
+            var headers = helper.constructHeaders(connection, options);
+
+            assert.equal(headers['Content-Type'], 'application/x-www-form-urlencoded');
+            assert.equal(headers['Accept'], 'application/json');
         });
 
         it('should set the accept header to json if configured', function() {
@@ -971,8 +1023,8 @@ describe('Http-helper', function() {
                 action.format = 'xml';
                 var helper = new Helper(connection, model, action, {}, {}, {});
 
-                helper.makeRequest(function(err, response, result) {
-                    assert.isNotNull(err.parsedResponseBody.documentElement)
+                helper.makeRequest(function(err) {
+                    assert.isNotNull(err.parsedResponseBody.documentElement);
                     done();
                 });
 
