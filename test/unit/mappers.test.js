@@ -2,6 +2,21 @@ var assert = require('chai').assert,
     mappers = require('../../lib/mappers');
 
 describe('Mappers', function() {
+    describe('form-encoded prototype function', function() {
+        it('should exist', function() {
+            assert.isDefined(mappers.FormEncodedMapper);
+        });
+
+        it('should be a function', function() {
+            assert.isFunction(mappers.FormEncodedMapper);
+        });
+
+        it('should return a FormEncodedMapper object', function() {
+            var mapper = mappers.FormEncodedMapper({}, {}, {});
+            assert.isObject(mapper);
+        });
+    });
+
     describe('XML prototype function', function() {
         it('should exist', function() {
             assert.isDefined(mappers.XmlMapper);
