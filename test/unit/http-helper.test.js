@@ -505,6 +505,21 @@ describe('Http-helper', function() {
             assert.equal(helper.constructUri(), 'http://localhost:1337/api/v1/model/abc123');
         });
 
+        it('should correctly interpolate the connection baseUri', function() {
+            action.path = '/api/v1/model/{{id}}';
+
+            connection.baseUri = 'http://{{url}}:1337';
+
+            var context = {
+                id: 'abc123',
+                url: 'mysite.com'
+            };
+
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            assert.equal(helper.constructUri(), 'http://mysite.com:1337/api/v1/model/abc123');
+        });
+
         it('should correctly interpolate configured URL parameters', function() {
             action.urlParameters = {
                 user: '{{query.id}}'
@@ -718,6 +733,34 @@ describe('Http-helper', function() {
             var headers = helper.constructHeaders();
 
             assert.isUndefined(headers['Authorization']);
+        });
+
+        it('should properly interpolate Authorization header username', function() {
+            connection.username = '{{username}}';
+
+            var context = {
+                username: 'bob'
+            };
+
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            var headers = helper.constructHeaders();
+
+            assert.equal(headers['Authorization'], 'Basic Ym9iOnBhc3N3b3Jk');
+        });
+
+        it('should properly interpolate Authorization header password', function() {
+            connection.passwordPlainText = '{{password}}';
+
+            var context = {
+                password: 'secret'
+            };
+
+            var helper = new Helper(connection, model, action, {}, {}, context);
+
+            var headers = helper.constructHeaders();
+
+            assert.equal(headers['Authorization'], 'Basic dXNlcjpzZWNyZXQ=');
         });
 
         it('should interpolate configured headers', function() {
