@@ -1,12 +1,16 @@
-var Helper = require('../../lib/http-helper'),
-    assert = require('chai').assert,
-    nock = require('nock'),
-    _ = require('lodash'),
-    testConnection = require('../stubs/connections').test,
-    v1model = require('../stubs/V1Model'),
-    DOMParser = require('xmldom').DOMParser;
+var Helper          = require('../../lib/http-helper'),
+    assert          = require('chai').assert,
+    nock            = require('nock'),
+    _               = require('lodash'),
+    testConnection  = require('../stubs/connections').test,
+    v1model         = require('../stubs/V1Model'),
+    certStubs       = require('../stubs/serialized-certs'),
+    DOMParser       = require('xmldom').DOMParser;
 
 var connection, model, action;
+
+var deserializedCert = '-----BEGIN CERTIFICATE-----\nMIIB6zCCAVigAwIBAgIQEx/TYsUso4hClUyVqx2IvzAJBgUrDgMCHQUAMBMxETAP\nBgNVBAMTCENpdHJpeFFBMB4XDTEyMDgyOTE5MzUwNloXDTM5MTIzMTIzNTk1OVow\nEzERMA8GA1UEAxMIQ2l0cml4UUEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGB\nAKn2R93QUfcWIUS/gXNAGCcVFSo4F1ISaHUJK3Cc5ZyLqKp+JcZr5SLFJHRG6rlE\naR0CUiMqAZVdIDXBdK6C2gE9shrf4kIiQrkd3XF5IApAndZi/0H9F56H8SF9qBXe\nZxnuWtGs1dUdZa1QqmWLwfcl2UFX9+ngAH3jlZaCuJKXAgMBAAGjSDBGMEQGA1Ud\nAQQ9MDuAEIsNKYxnvXFKpmHzKat7es2hFTATMREwDwYDVQQDEwhDaXRyaXhRQYIQ\nEx/TYsUso4hClUyVqx2IvzAJBgUrDgMCHQUAA4GBAEndD5wNe2NK1j5RCfwLzvGA\nmg7eAKPBK42nFVmRLFnO3A9nCW813NaSeXpIJHDGYWCZaFCYZXvWlT0nnyntY43y\nJogIeHE7otKjYlXqABMSzF75X49McYhqZwCRl481HNLvZ2ibPpuY4fY9XYZyhstR\ne+LLXQsJhM17egwgEa8l\n-----END CERTIFICATE-----\n';
+var deserializedKey = '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA14/lKHL5/JcjUiYVETEVNQX769L0JgZUjlHqWgDqrjdEXzZE\nxcnrZ282UicCUjlkfCyoDVyn2X1u8YReQT6IAeoV5SjuKNV84LLHw7gtdURLUccY\n2vGvdFBI/Kx+mCQWI0fdXJ2OYsI0Yj2X4oGnVv5pspNWsR324reEspv6zQXDFcds\nzq9iuritmAUAn1eHKIx+Cqz3ph4HS5GM+fv/UXBzbSNRWnF3ZyQwRLp66WQ+wl+G\nhacAqDiRK7zq9Pp7K48c6X1IlrgYC80iAamVHd788+/bBO7NY5TITgtI5ZPLpsCo\nNRHsKtAJgmFmCi3OLJoUohN81qIg7V/QeUg2UwIDAQABAoIBAQCW4/gB93G7+UPV\nNikbDqOMqTKt4c3bbCT2Nqr385pS9wbaKw+679vjXHrGyN2cFuaa8Vt1dv1bha0K\nTKD5xL7JsEVBUwRa+w3d7+dbvmm7o2Ghzd89K16o6aYdkNVQxDnm2mA+e193DABF\nIF5YRG+RuqbcRLyzYIk4LEQsDnlh1zQvg9IIEHKy1P8UQj8P0AI8v3rl4hWTx8BF\nCk5rah8Gmy18VnuOLp5i/pCSw+9/UdxR+kFSwKYx9j3XoTlGnwQdygE5SRyZ08rR\naxtQvptTwmqRhiqByP46ohTXBmDhUF0jhw8fbNZDaxVhEbx4iaNYzw1oups+nXIS\nZU/HUL5hAoGBAPovpNBDOXvsE/RsiZgqeb36FkYeoCqF6Q8qIR5Cn+v25QPrclEU\nU/Y6Xo1Lw3UybVFTEraZD5jPCauVk0H65LsfioZYKVR3c0Yfm1s4I1RSbIJWKzhq\nBMIMQHFHNb9yHZJ9TtwxOrHLZNnR0A9NnzJ/JpaCg/tCMW+Vjrfl7NsRAoGBANyS\nRfAW3IPU/XOud/JHyxA7dceR+ieXEqIFWwG/7Ct09ggQ1uuckjWiq0Qh0OmVI86S\nEXUkeqZ2YU41UgdxROULxCEMfwpVGFGFwA4u9Z7RB2xQaKR1RZLaA8Gwg/xaULQw\nBc6uAlUmzFeEG7IejbRpso+Yv+er87umoFmzZBMjAoGBAK+bm5L3bLT4CzWorZfa\nUKOxk8raGlBeuC0FxENKPphRL4Tl0dLpctnFNLL2+BYeNC8+IUd7/j+jK0V98uQA\nKGbUB9ausSvxwD77Vn/b0qiQRkviEepCOF7AXMdmVWqwveMiA6V5BJrhikN+Cw2C\nzXiTWVGSAPPvDWYmUwvv3qYRAoGASpTrMROJ3MnYKZWE2VeNQh/Y43Jos5pRopdM\n/np20Prrdi67fU+j4J7waklE6raTNPYPER0Um9TLcjZ1Vi7mrMwdtU8UZdoALxCa\nsDEQvHLRn75Qo8tDizRMsOGOv3WKdGMIk6oi/8fusGjrNH9ASxCyX/u2aA+sinb9\nIVeXLyECgYBkyRyzmtVkWTf6OB+6y6rKwCL+uD5JaV8NMiaBUQIIMaSiZeHt2Vql\nKmtSxGuzRfXTHvhYyrHLpEOmTyvTl11mxSnOD6USirUXiwCn0gP/kT2fVAf9z4kS\nZ/M6VggsLPFqvYEioszGbUcQFgK3qGrkXmos7EF+BV2z8BDwORQXTA==\n-----END RSA PRIVATE KEY-----\n';
 
 describe('Http-helper', function() {
     beforeEach(function() {
@@ -1086,6 +1090,76 @@ describe('Http-helper', function() {
                     done();
                 });
             });
+        });
+    });
+
+    describe('addTlsOptions', function() {
+        afterEach(function() {
+            delete process.env.HTTP_ADAPTER_CERT;
+            delete process.env.HTTP_ADAPTER_KEY;
+            delete process.env.HTTP_ADAPTER_PFX;
+        });
+
+        it('should exits', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            assert.isDefined(helper.addTlsOptions);
+        });
+
+        it('should not create any agent options if nothing is present in the process.env', function() {
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            var options = {};
+            helper.addTlsOptions(options);
+
+            assert.isUndefined(options.agentOptions);
+        });
+
+        it('should create a "cert" key if present in the process.env', function() {
+            process.env.HTTP_ADAPTER_CERT = certStubs.cert;
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            var options = {};
+            helper.addTlsOptions(options);
+
+            assert.isDefined(options.agentOptions);
+            assert.isDefined(options.agentOptions.cert);
+            // Should be deserialized.
+            assert.equal(options.agentOptions.cert, deserializedCert);
+        });
+
+        it('should create a "key" key if present in the process.env', function() {
+            process.env.HTTP_ADAPTER_KEY = certStubs.key;
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            var options = {};
+            helper.addTlsOptions(options);
+
+            assert.isDefined(options.agentOptions);
+            assert.isDefined(options.agentOptions.key);
+            assert.equal(options.agentOptions.key, deserializedKey);
+        });
+
+        it('should create a "pfx" key if present in process.env', function() {
+            process.env.HTTP_ADAPTER_PFX = certStubs.cert;
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            var options = {};
+            helper.addTlsOptions(options);
+
+            assert.isDefined(options.agentOptions);
+            assert.isDefined(options.agentOptions.pfx);
+            assert.equal(options.agentOptions.pfx, deserializedCert);
+        });
+
+        it('should create a "passphrase" key if present in process.env', function() {
+            process.env.HTTP_ADAPTER_PASSPHRASE = 'test';
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            var options = {};
+            helper.addTlsOptions(options);
+
+            assert.isDefined(options.agentOptions);
+            assert.isDefined(options.agentOptions.passphrase);
+            assert.equal(options.agentOptions.passphrase, 'test');
         });
     });
 });
