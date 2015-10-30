@@ -1098,6 +1098,7 @@ describe('Http-helper', function() {
             delete process.env.HTTP_ADAPTER_CERT;
             delete process.env.HTTP_ADAPTER_KEY;
             delete process.env.HTTP_ADAPTER_PFX;
+            delete process.env.HTTP_ADAPTER_CA_CERT;
         });
 
         it('should exits', function() {
@@ -1126,6 +1127,19 @@ describe('Http-helper', function() {
             assert.equal(options.agentOptions.cert, deserializedCert);
         });
 
+        it('should create a "caCert" key is present in the process.env', function() {
+            process.env.HTTP_ADAPTER_CA_CERT = certStubs.cert;
+
+            var helper = new Helper(connection, model, action, {}, {}, {});
+            var options = {};
+            helper.addTlsOptions(options);
+
+            assert.isDefined(options.agentOptions);
+            assert.isDefined(options.agentOptions.ca);
+            // Should be deserialized.
+            assert.equal(options.agentOptions.ca, deserializedCert);
+        });
+
         it('should create a "key" key if present in the process.env', function() {
             process.env.HTTP_ADAPTER_KEY = certStubs.key;
 
@@ -1135,6 +1149,7 @@ describe('Http-helper', function() {
 
             assert.isDefined(options.agentOptions);
             assert.isDefined(options.agentOptions.key);
+            // Should be deserialized.
             assert.equal(options.agentOptions.key, deserializedKey);
         });
 
@@ -1147,6 +1162,7 @@ describe('Http-helper', function() {
 
             assert.isDefined(options.agentOptions);
             assert.isDefined(options.agentOptions.pfx);
+            // Should be deserialized.
             assert.equal(options.agentOptions.pfx, deserializedCert);
         });
 
