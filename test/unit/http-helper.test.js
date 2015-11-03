@@ -1095,10 +1095,11 @@ describe('Http-helper', function() {
 
     describe('addTlsOptions', function() {
         afterEach(function() {
-            delete process.env.HTTP_ADAPTER_CERT;
-            delete process.env.HTTP_ADAPTER_KEY;
-            delete process.env.HTTP_ADAPTER_PFX;
-            delete process.env.HTTP_ADAPTER_CA_CERT;
+            delete process.env.HTTP_TEST_SERIALIZED_CERT;
+            delete process.env.HTTP_ADAPTER_SERIALIZED_PRIVATE_KEY;
+            delete process.env.HTTP_TEST_SERIALIZED_PFX;
+            delete process.env.HTTP_TEST_SERIALIZED_CA_CERT;
+            delete process.env.HTTP_TEST_PASSPHRASE;
         });
 
         it('should exits', function() {
@@ -1115,7 +1116,7 @@ describe('Http-helper', function() {
         });
 
         it('should create a "cert" key if present in the process.env', function() {
-            process.env.HTTP_ADAPTER_CERT = certStubs.cert;
+            process.env.HTTP_TEST_SERIALIZED_CERT = certStubs.cert;
 
             var helper = new Helper(connection, model, action, {}, {}, {});
             var options = {};
@@ -1128,7 +1129,7 @@ describe('Http-helper', function() {
         });
 
         it('should create a "caCert" key is present in the process.env', function() {
-            process.env.HTTP_ADAPTER_CA_CERT = certStubs.cert;
+            process.env.HTTP_TEST_SERIALIZED_CA_CERT = certStubs.cert;
 
             var helper = new Helper(connection, model, action, {}, {}, {});
             var options = {};
@@ -1141,7 +1142,7 @@ describe('Http-helper', function() {
         });
 
         it('should create a "key" key if present in the process.env', function() {
-            process.env.HTTP_ADAPTER_KEY = certStubs.key;
+            process.env.HTTP_TEST_SERIALIZED_PRIVATE_KEY = certStubs.key;
 
             var helper = new Helper(connection, model, action, {}, {}, {});
             var options = {};
@@ -1154,7 +1155,7 @@ describe('Http-helper', function() {
         });
 
         it('should create a "pfx" key if present in process.env', function() {
-            process.env.HTTP_ADAPTER_PFX = certStubs.cert;
+            process.env.HTTP_TEST_SERIALIZED_PFX = certStubs.cert;
 
             var helper = new Helper(connection, model, action, {}, {}, {});
             var options = {};
@@ -1167,7 +1168,7 @@ describe('Http-helper', function() {
         });
 
         it('should create a "passphrase" key if present in process.env', function() {
-            process.env.HTTP_ADAPTER_PASSPHRASE = 'test';
+            process.env.HTTP_TEST_PASSPHRASE = 'test';
 
             var helper = new Helper(connection, model, action, {}, {}, {});
             var options = {};
