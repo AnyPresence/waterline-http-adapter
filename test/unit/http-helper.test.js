@@ -16,7 +16,7 @@ describe('Http-helper', function() {
     beforeEach(function() {
         connection = _.cloneDeep(testConnection);
         model = _.cloneDeep(v1model);
-        action = model.http['read'];
+        action = _.cloneDeep(model.http['read']);
     });
 
     describe('interpolate function', function() {
@@ -72,14 +72,14 @@ describe('Http-helper', function() {
                 it('should return a correctly mapped object', function(done) {
                     var payload = require('../stubs/json-response').single;
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         desc: '$.outer.inner.value',
                         value: '$.outer.number',
                         longFieldName: 'long_field_name',
                         id: 'id'
                     };
 
-                    model.http.read.pathSelector = '$.*';
+                   action.pathSelector = '$.*';
 
                     var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -99,11 +99,11 @@ describe('Http-helper', function() {
                         type: 'array'
                     };
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         collection: '$.outer.inner'
                     };
 
-                    model.http.read.pathSelector = '$.*';
+                    action.pathSelector = '$.*';
 
                     var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -116,12 +116,12 @@ describe('Http-helper', function() {
                 it('should return a collection of correctly mapped object', function(done) {
                     var payload = require('../stubs/json-response').collection;
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         desc: '$.outer.inner.value',
                         value: '$.outer.number'
                     };
 
-                    model.http.read.pathSelector = '$.v1models.*';
+                    action.pathSelector = '$.v1models.*';
 
                     var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -137,7 +137,7 @@ describe('Http-helper', function() {
                 it('should properly map a simple field value', function(done) {
                     var payload = require('../stubs/json-response').single;
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         'value': 'id'
                     };
 
@@ -154,7 +154,7 @@ describe('Http-helper', function() {
                 it('should not include fields not present in the response mapping', function(done) {
                     var payload = require('../stubs/json-response').single;
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         'the_id': 'id'
                     };
 
@@ -172,13 +172,13 @@ describe('Http-helper', function() {
                 it('should properly return a payload when using the $ selector', function(done) {
                     var payload = require('../stubs/json-response').singleNoRoot;
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         'id': 'id'
                     };
 
                     action.format = 'json';
 
-                    model.http.read.pathSelector = '$';
+                    action.pathSelector = '$';
 
                     var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -195,11 +195,11 @@ describe('Http-helper', function() {
 
                     var tag = action.objectNameMapping;
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         desc: '/' + tag + '/desc/text()'
                     };
 
-                    model.http.read.pathSelector = '/v1model';
+                    action.pathSelector = '/v1model';
 
                     action.format = 'xml';
 
@@ -214,11 +214,11 @@ describe('Http-helper', function() {
                 it('should return a collection of correctly mapped objects', function(done) {
                     var payload = new DOMParser().parseFromString(require('../stubs/xml-response').collection);
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         id: 'id/text()'
                     };
 
-                    model.http.read.pathSelector = '/v1models/v1model';
+                    action.pathSelector = '/v1models/v1model';
 
                     action.format = 'xml';
 
@@ -236,11 +236,11 @@ describe('Http-helper', function() {
                 it('should return a collection of correctly mapped object with configured xpath mapping', function(done) {
                     var payload = new DOMParser().parseFromString(require('../stubs/xml-response').collection);
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         desc:'desc/text()'
                     };
 
-                    model.http.read.pathSelector = '/v1models/v1model';
+                    action.pathSelector = '/v1models/v1model';
 
                     action.format = 'xml';
 
@@ -259,11 +259,11 @@ describe('Http-helper', function() {
                 it('should properly map a simple field value', function(done) {
                     var payload = new DOMParser().parseFromString(require('../stubs/xml-response').collection);
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         'value': 'id'
                     };
 
-                    model.http.read.pathSelector = '/v1models/v1model';
+                    action.pathSelector = '/v1models/v1model';
 
                     action.format = 'xml';
 
@@ -278,11 +278,11 @@ describe('Http-helper', function() {
                 it('should properly determine a mapping is an xpath value', function(done) {
                     var payload = new DOMParser().parseFromString(require('../stubs/xml-response').single);
 
-                    model.http.read.mapping.response = {
+                    action.mapping.response = {
                         'value': 'id'
                     };
 
-                    model.http.read.pathSelector = '/v1model';
+                    action.pathSelector = '/v1model';
 
                     action.format = 'xml';
 
@@ -318,7 +318,7 @@ describe('Http-helper', function() {
 
                 it('should return a properly mapped payload', function(done) {
                     action.format = 'form_encoded';
-                    model.http.read.mapping.request = {
+                    action.mapping.request = {
                         id: 'id',
                         value: 'a_value',
                         desc: 'description'
@@ -346,7 +346,7 @@ describe('Http-helper', function() {
                 });
 
                 it('should return a properly mapped object with mapping', function(done) {
-                    model.http.read.mapping.request = {
+                    action.mapping.request = {
                         id: 'a_field',
                         value: 'the_value'
                     };
@@ -364,7 +364,7 @@ describe('Http-helper', function() {
                 it('should not map fields that do not have an appropriate mapping', function(done){
                     // No mapping provided for 'name' field. The name field should not
                     // appear in the mapped result.
-                    model.http.read.mapping.request = {
+                    action.mapping.request = {
                         id: 'id',
                         value: 'val'
                     };
@@ -601,7 +601,7 @@ describe('Http-helper', function() {
         var options;
 
         beforeEach(function() {
-            options = model.http.read;
+            options = action;
         });
 
         it('should exist', function() {
@@ -924,6 +924,97 @@ describe('Http-helper', function() {
             var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.makeRequest);
         });
+        
+        describe('with afterRawResponse callback', () => {
+            'use strict';
+            
+            it('should execute the callback', done => {
+                nock('http://localhost:1337')
+                .get('/api/V1/model')
+                .reply(200);
+                
+                let called = false;
+                action.afterRawResponse = function*() {
+                    called = true;
+                };
+                
+                let helper = new Helper(connection, model, action, {}, {}, {});
+                helper.makeRequest(e => {
+                    assert(called, 'afterRawResponse was not called');
+                    done(e);
+                });
+            });
+            
+            it('should supply the raw response', done => {
+                nock('http://localhost:1337')
+                .get('/api/V1/model')
+                .reply(200);
+
+                action.afterRawResponse = function*(response) {
+                    assert.isDefined(response);
+                    done();
+                };
+
+                let helper = new Helper(connection, model, action, {}, {}, {});
+                helper.makeRequest(() => { });
+            });
+        });
+
+        describe('with beforeRawRequest callback', () => {
+            'use strict';
+
+            it('should execute the callback', (done) => {
+                nock('http://localhost:1337')
+                .get('/api/V1/model')
+                .reply(200);
+
+                let called = false;
+                action.beforeRawRequest = function*() {
+                    called = true;
+                };
+
+                let helper = new Helper(connection, model, action, {}, {}, {});
+                helper.makeRequest((e) => {
+                    assert(called, 'beforeRawRequest was not called');
+                    done(e);
+                });
+            });
+
+            it('should supply the raw request options', (done) => {
+                nock('http://localhost:1337')
+                .get('/api/V1/model')
+                .reply(200);
+
+                action.beforeRawRequest = function*(opts) {
+                    assert.isDefined(opts.url);
+                    assert.isDefined(opts.body);
+                    assert.isDefined(opts.method);
+                    assert.isDefined(opts.headers);
+                    done();
+                };
+
+                let helper = new Helper(connection, model, action, {}, {}, {});
+                helper.makeRequest(() => { });
+            });
+
+            it('should reflect changes made in the beforeRawRequest callback in the outgoing request', (done) => {
+                nock('http://localhost:1337')
+                .filteringRequestBody(function(p) {
+                    assert.equal(p, 'test');
+                })
+                .get('/api/V1/model')
+                .reply(200);
+
+                action.beforeRawRequest = function*(opts) {
+                    opts.body = 'test';
+                };
+
+                let helper = new Helper(connection, model, action, {}, {}, {});
+                helper.makeRequest((e) => {
+                    done(e);
+                });
+            });
+        });
 
         it('should make a request to the url in the configuration', function(done) {
             nock('http://localhost:1337')
@@ -943,7 +1034,7 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200);
 
-            model.http.read.headers = {
+            action.headers = {
                 'token': 'abc123'
             };
 
@@ -975,7 +1066,7 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200);
 
-            model.http.read.pathSelector = '$';
+            action.pathSelector = '$';
 
             var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -992,7 +1083,7 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200, {test: '123'});
 
-            model.http.read.pathSelector = '';
+            action.pathSelector = '';
 
             var helper = new Helper(connection, model, action, {}, {}, {});
 
@@ -1102,7 +1193,7 @@ describe('Http-helper', function() {
             delete process.env.HTTP_TEST_PASSPHRASE;
         });
 
-        it('should exits', function() {
+        it('should exist', function() {
             var helper = new Helper(connection, model, action, {}, {}, {});
             assert.isDefined(helper.addTlsOptions);
         });
