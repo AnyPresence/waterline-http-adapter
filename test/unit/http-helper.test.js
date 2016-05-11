@@ -1270,4 +1270,51 @@ describe('Http-helper', function() {
             assert.equal(options.agentOptions.passphrase, 'test');
         });
     });
+
+    describe('Odata support', function() {
+        beforeEach(() => {
+            connection.legacyOdataSupport = true;
+        });
+
+        after(() => {
+            connection.legacyOdataSupport = false;
+        });
+        
+        describe('URI characters and encoding', function() {
+            it('should not encode special characters', function() {
+                action.path = `/api/v1/categories('products')`; 
+
+                var expected = "http://localhost:1337/api/v1/categories('products')";
+
+                var helper = new Helper(connection, model, action, {}, {}, {});
+                var result = helper.constructUri();
+
+                assert.equal(result, expected);
+            });             
+
+            it ('should properly interpolate the base path', function() {    
+                action.path = `/api/v1/categories('{{query.category}}')`;
+                var context = { query: { category: 'widgets' } };
+                var expected = "http://localhost:1337/api/v1/categories('widgets')"; 
+
+                var helper = new Helper(connection, model, action, {}, {}, context);
+                var result = helper.constructUri();
+
+                assert.equal(result, expected);
+            });
+
+            it('should properly append query parameters that have special characters', function() {
+                action.path = `/api/v1/categories('widgets')`;
+                action.urlParameters = { "$color": "red" };
+                
+                var expected = "http://localhost:1337/api/v1/categories('widgets')?$color=red";
+
+                var helper = new Helper(connection, model, action, {}, {}, {});
+                var result = helper.constructUri();
+
+                assert.equal(result, expected);
+            });
+        }); 
+    });
+
 });
