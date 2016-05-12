@@ -5,7 +5,8 @@ var Helper          = require('../../lib/http-helper'),
     testConnection  = require('../stubs/connections').test,
     v1model         = require('../stubs/V1Model'),
     certStubs       = require('../stubs/serialized-certs'),
-    DOMParser       = require('xmldom').DOMParser;
+    DOMParser       = require('xmldom').DOMParser,
+    Promise         = require('bluebird');
 
 var connection, model, action;
 
@@ -928,15 +929,23 @@ describe('Http-helper', function() {
         describe('with afterRawResponse callback', () => {
             'use strict';
             
+            afterEach(() => {
+                connection.afterRawResponse = null;
+            });
+
             it('should execute the callback', done => {
                 nock('http://localhost:1337')
                 .get('/api/V1/model')
                 .reply(200);
                 
                 let called = false;
-                action.afterRawResponse = function*() {
+
+                let fn = function(response, cb) {
                     called = true;
-                };
+                    cb();
+                }
+
+                connection.afterRawResponse = Promise.promisify(fn);
                 
                 let helper = new Helper(connection, model, action, {}, {}, {});
                 helper.makeRequest(e => {
@@ -950,69 +959,51 @@ describe('Http-helper', function() {
                 .get('/api/V1/model')
                 .reply(200);
 
-                action.afterRawResponse = function*(response) {
+                let fn = function(response, cb) {
                     assert.isDefined(response);
-                    done();
-                };
+                    cb();
+                }
+    
+                connection.afterRawResponse = Promise.promisify(fn);
 
                 let helper = new Helper(connection, model, action, {}, {}, {});
-                helper.makeRequest(() => { });
+                helper.makeRequest(() => { 
+                    done();
+                });
             });
         });
 
         describe('with beforeRawRequest callback', () => {
             'use strict';
 
-            it('should execute the callback', (done) => {
-                nock('http://localhost:1337')
-                .get('/api/V1/model')
-                .reply(200);
+            afterEach(() => {
+                connection.beforeRawRequest = null;
+            })
 
-                let called = false;
-                action.beforeRawRequest = function*() {
-                    called = true;
-                };
+            it('should execute the callback', (done) => {
+                let fn = function(params, cb) {
+                    done();
+                }
+                
+                connection.beforeRawRequest = Promise.promisify(fn);
 
                 let helper = new Helper(connection, model, action, {}, {}, {});
-                helper.makeRequest((e) => {
-                    assert(called, 'beforeRawRequest was not called');
-                    done(e);
-                });
+                helper.makeRequest(() => {});
             });
 
             it('should supply the raw request options', (done) => {
-                nock('http://localhost:1337')
-                .get('/api/V1/model')
-                .reply(200);
-
-                action.beforeRawRequest = function*(opts) {
+                let fn = function(options, cb) {
                     assert.isDefined(opts.url);
                     assert.isDefined(opts.body);
                     assert.isDefined(opts.method);
                     assert.isDefined(opts.headers);
-                    done();
+                    cb();
                 };
 
-                let helper = new Helper(connection, model, action, {}, {}, {});
-                helper.makeRequest(() => { });
-            });
-
-            it('should reflect changes made in the beforeRawRequest callback in the outgoing request', (done) => {
-                nock('http://localhost:1337')
-                .filteringRequestBody(function(p) {
-                    assert.equal(p, 'test');
-                })
-                .get('/api/V1/model')
-                .reply(200);
-
-                action.beforeRawRequest = function*(opts) {
-                    opts.body = 'test';
-                };
+                connection.beforeRawRequest = Promise.promisify(fn);    
 
                 let helper = new Helper(connection, model, action, {}, {}, {});
-                helper.makeRequest((e) => {
-                    done(e);
-                });
+                helper.makeRequest(() => { done(); });
             });
         });
 
@@ -1130,7 +1121,6 @@ describe('Http-helper', function() {
                     .reply(400, "{ \"error\": \"Bad request\" }");
 
                 var helper = new Helper(connection, model, action, {}, {}, {});
-
                 helper.makeRequest(function(err, response, result) {
                     assert.deepEqual(err.parsedResponseBody, {error: 'Bad request'});
                     done();
