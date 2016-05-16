@@ -10,12 +10,17 @@
     "type": "git",
     "url": "git://github.com/AnyPresence/waterline-http-adapter"
   },
+  "engines": {
+    "node": ">=4.3.1"
+  },
   "author": "AnyPresence",
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
     "JSONPath": "0.10.0",
     "URIjs": "1.14.1",
+    "bluebird": "3.3.5",
+    "co": "^4.6.0",
     "handlebars": "2.0.0",
     "inflection": "1.5.3",
     "jsonpath-object-transform": "1.0.3",
